@@ -6,7 +6,7 @@ import nacl.encoding
 from did import generate_keys, generate_did, get_signing_key
 from sign_vc import sign
 from sign_vp import sign_vp
-from verify_vc import verify_vc
+from verify import verify_vc
 from verify_vp import verify_vp
 from utils import now
 
@@ -107,7 +107,7 @@ def test_verifiable_credential():
     cred = json.dumps(credential)
 
     vc = sign(cred, signing_key, did)
-    verified = verify_vc(vc)
+    verified = verify_vc(json.dumps(vc))
     assert verified
 
 
@@ -136,6 +136,6 @@ def test_verifiable_presentation():
     holder_did = generate_did(holder_key)
     holder_signing_key = get_signing_key(holder_key)
     vp = sign_vp(holder_signing_key, holder_did, vc_json)
-    verified = verify_vp(vp)
+    verified = verify_vc(json.dumps(vp))
     assert verified
 
