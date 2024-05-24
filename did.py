@@ -57,7 +57,7 @@ def generate_keys():
     # Generate an Ed25519 key pair
     key = jwk.JWK.generate(kty='OKP', crv='Ed25519')
     key['kid'] = 'Generated'
-    return key.export()
+    return key.export_private(True)
 
 
 def main():
@@ -67,7 +67,8 @@ def main():
     args=parser.parse_args()
 
     if args.new == 'keys':
-        print(generate_keys())
+        keyspair = generate_keys()
+        print(json.dumps(keyspair))
         return
 
     if not args.key_path and args.new == 'did':
@@ -76,8 +77,8 @@ def main():
 
     if args.new == 'did':
         key = key_read(args.key_path)
-        keyspair = generate_did(key)
-        print(json.dumps(keyspair))
+        did = generate_did(key)
+        print(json.dumps(did))
         return
     
 

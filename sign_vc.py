@@ -1,6 +1,7 @@
 import json
+import argparse
 from utils import now
-from did import generate_keys, generate_did, get_signing_key
+from did import generate_did, get_signing_key, key_read
 from templates import credential_tmpl, proof_tmpl
 from sign import sign_proof
 
@@ -21,18 +22,25 @@ def sign(credential, key, issuer_did):
 
 
 def main():
-    key = generate_keys()
-    did = generate_did(key)
-    signing_key = get_signing_key(key)
+    parser=argparse.ArgumentParser(description='Generates a new credential')
+    parser.add_argument("-k", "--key-path", required=True)
+    args=parser.parse_args()
 
-    credential = credential_tmpl.copy()
-    credential["issuer"] = did
-    credential["issuanceDate"] = now()
-    cred = json.dumps(credential)
+    if args.key_path:
+        key = key_read(args.key_path)
+        did = generate_did(key)
+        signing_key = get_signing_key(key)
 
-    vc = sign(cred, signing_key, did)
+        credential = credential_tmpl.copy()
+        credential["issuer"] = did
+        credential["issuanceDate"] = now()
+        cred = json.dumps(credential)
 
-    print(json.dumps(vc, separators=(',', ':')))
+        vc = sign(cred, signing_key, did)
+
+        print(json.dumps(vc, separators=(',', ':')))
+
+        return
 
 
 if __name__ == "__main__":
