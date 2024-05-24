@@ -6,20 +6,12 @@ import nacl.encoding
 from jwcrypto import jwk
 from nacl.signing import SigningKey
 from nacl.encoding import RawEncoder
-from datetime import datetime, timezone
-
-
-def now():
-    timestamp = datetime.now(timezone.utc).replace(microsecond=0)
-    formatted_timestamp = timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")
-    return formatted_timestamp
 
 
 def key_to_did(public_key_bytes, type_did):
     """did-key-format := 
        did:key:MULTIBASE(base58-btc, MULTICODEC(public-key-type, raw-public-key-bytes))"""
 
-    #public_key_bytes = public_key.encode()
     mc = multicodec.add_prefix('ed25519-pub', public_key_bytes)
 
     # Multibase encode the hashed bytes
