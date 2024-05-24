@@ -62,3 +62,5 @@ def sign_proof(document, proof, key):
     jws = detached_sign_unencoded_payload(message, key)
     proof["jws"] = jws.decode('utf-8')[:-2]
     return proof
+
+
