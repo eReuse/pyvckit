@@ -3,17 +3,12 @@ import multicodec
 import multiformats
 import nacl.encoding
 
-from datetime import datetime, timezone
-from did_generate import generate_keys, generate_did, get_signing_key
+from did import generate_keys, generate_did, get_signing_key
 from sign_vc import sign
 from sign_vp import sign_vp
 from verify_vc import verify_vc
 from verify_vp import verify_vp
-
-def now():
-    timestamp = datetime.now(timezone.utc).replace(microsecond=0)
-    formatted_timestamp = timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")
-    return formatted_timestamp
+from utils import now
 
 
 def test_generated_did_key():
@@ -37,6 +32,7 @@ def test_generated_did_key():
 
 
 def test_credential():
+    # import pdb; pdb.set_trace()
     key = generate_keys()
     did = generate_did(key)
     signing_key = get_signing_key(key)
@@ -52,7 +48,9 @@ def test_credential():
         "issuanceDate": now()
     }
 
-    vc = sign(credential, signing_key, did)
+    cred = json.dumps(credential)
+
+    vc = sign(cred, signing_key, did)
     header = 'eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9'
     assert vc.get('proof', {}).get('jws') is not None
     assert header in vc.get('proof', {}).get('jws')
@@ -75,7 +73,9 @@ def test_presentation():
         "issuanceDate": now()
     }
 
-    vc = sign(credential, signing_key, did)
+    cred = json.dumps(credential)
+
+    vc = sign(cred, signing_key, did)
     vc_json = json.dumps(vc)
 
     holder_key = generate_keys()
@@ -104,7 +104,9 @@ def test_verifiable_credential():
         "issuanceDate": now()
     }
 
-    vc = sign(credential, signing_key, did)
+    cred = json.dumps(credential)
+
+    vc = sign(cred, signing_key, did)
     verified = verify_vc(vc)
     assert verified
 
@@ -125,7 +127,9 @@ def test_verifiable_presentation():
         "issuanceDate": now()
     }
 
-    vc = sign(credential, signing_key, did)
+    cred = json.dumps(credential)
+
+    vc = sign(cred, signing_key, did)
     vc_json = json.dumps(vc)
 
     holder_key = generate_keys()
