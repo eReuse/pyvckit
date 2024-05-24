@@ -32,7 +32,6 @@ def test_generated_did_key():
 
 
 def test_credential():
-    # import pdb; pdb.set_trace()
     key = generate_keys()
     did = generate_did(key)
     signing_key = get_signing_key(key)
