@@ -1,3 +1,5 @@
+import json
+import argparse
 import multicodec
 import multiformats
 import nacl.signing
@@ -23,16 +25,9 @@ def key_to_did(public_key_bytes, type_did):
     return f"did:key:{did}"
 
 
-def key_save(key):
+def key_read(path_keys):
   # Save the private JWK to a file
-  private_jwk = key.export()
-  with open('keypairs.jwk', 'w') as f:
-      f.write(private_jwk)
-
-
-def key_read():
-  # Save the private JWK to a file
-  with open('keypairs.jwk', 'r') as f:
+  with open(path_keys, 'r') as f:
       private_jwk = f.read()
 
   return jwk.JWK.from_json(private_jwk)
@@ -62,11 +57,29 @@ def generate_keys():
     # Generate an Ed25519 key pair
     key = jwk.JWK.generate(kty='OKP', crv='Ed25519')
     key['kid'] = 'Generated'
-    jwk_pr = key.export_private(True)
-    return jwk_pr
+    return key.export()
 
+
+def main():
+    parser=argparse.ArgumentParser(description='Generates a new did or key pair')
+    parser.add_argument("-k", "--key-path", required=False)
+    parser.add_argument("-n", "--new", choices=['keys', 'did'])
+    args=parser.parse_args()
+
+    if args.new == 'keys':
+        print(generate_keys())
+        return
+
+    if not args.key_path and args.new == 'did':
+        print("error: argument --key-path: expected one argument")
+        return
+
+    if args.new == 'did':
+        key = key_read(args.key_path)
+        keyspair = generate_did(key)
+        print(json.dumps(keyspair))
+        return
+    
 
 if __name__ == "__main__":
-
-    key = generate_keys()
-    print(generate_did(key))
+    main()
