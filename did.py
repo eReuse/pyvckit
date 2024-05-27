@@ -34,7 +34,8 @@ def key_read(path_keys):
 
 
 def get_signing_key(jwk_pr):
-    private_key_material_str = jwk_pr['d']
+    key = json.loads(jwk_pr)
+    private_key_material_str = key['d']
     missing_padding = len(private_key_material_str) % 4
     if missing_padding:
       private_key_material_str += '=' * (4 - missing_padding)
@@ -57,7 +58,8 @@ def generate_keys():
     # Generate an Ed25519 key pair
     key = jwk.JWK.generate(kty='OKP', crv='Ed25519')
     key['kid'] = 'Generated'
-    return key.export_private(True)
+    key_json = key.export_private(True)
+    return json.dumps(key_json)
 
 
 def main():
