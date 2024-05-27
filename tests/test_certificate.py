@@ -13,22 +13,23 @@ from utils import now
 
 def test_generated_did_key():
     key = generate_keys()
+    key_d = json.loads(key)
     did = generate_did(key)
     _did = did.split("#")[0]
     pub = _did.split(":")[-1]
     mc = multiformats.multibase.decode(pub)
     public_key_bytes = multicodec.remove_prefix(mc)
     x = nacl.encoding.URLSafeBase64Encoder.encode(public_key_bytes).decode('utf-8')
-    k_x = key.get('x', '')
+    k_x = key_d.get('x', '')
     missing_padding = len(k_x) % 4
     if missing_padding:
         k_x += '=' * (4 - missing_padding)
 
-    assert key.get('kty') == 'OKP'
-    assert key.get('crv') == 'Ed25519'
-    assert key.get('kid') == 'Generated'
+    assert key_d.get('kty') == 'OKP'
+    assert key_d.get('crv') == 'Ed25519'
+    assert key_d.get('kid') == 'Generated'
     assert k_x == x
-    assert key.get('d') is not None
+    assert key_d.get('d') is not None
 
 
 def test_credential():
@@ -135,6 +136,6 @@ def test_verifiable_presentation():
     holder_did = generate_did(holder_key)
     holder_signing_key = get_signing_key(holder_key)
     vp = sign_vp(holder_signing_key, holder_did, vc_json)
-    verified = verify_vc(json.dumps(vp))
+    verified = verify_vp(json.dumps(vp))
     assert verified
 
