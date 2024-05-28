@@ -42,7 +42,7 @@ setup(
     ],
     extras_require={
         'test': test_requires
-    }
+    },
     author="eReuse.org team",
     author_email="cayo@puigdefabregas.eu",
     description="signature and validation of verifiable credential and verifiable presentation",
