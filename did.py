@@ -30,7 +30,7 @@ def key_read(path_keys):
   with open(path_keys, 'r') as f:
       private_jwk = f.read()
 
-  return jwk.JWK.from_json(private_jwk)
+  return private_jwk
 
 
 def get_signing_key(jwk_pr):
@@ -70,7 +70,7 @@ def main():
 
     if args.new == 'keys':
         keyspair = generate_keys()
-        print(json.dumps(keyspair))
+        print(keyspair)
         return
 
     if not args.key_path and args.new == 'did':
@@ -80,7 +80,7 @@ def main():
     if args.new == 'did':
         key = key_read(args.key_path)
         did = generate_did(key)
-        print(json.dumps(did))
+        print(did)
         return
     
 
