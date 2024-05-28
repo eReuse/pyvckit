@@ -11,12 +11,13 @@ Por ahora la criptografía soportada es solo EdDSA con una firma Ed25519Signatur
 
 # Instalación
 Por ahora la instalación es desde el repositorio:
-```python
-  python -m venv env
-  source env/bin/activate
-  git clone https://gitea.pangea.org/ereuse/pyvckit.git
-  cd pyvckit
-  pip install -r requirements.txt
+```sh
+    python -m venv env
+    source env/bin/activate
+    git clone https://gitea.pangea.org/ereuse/pyvckit.git
+    cd pyvckit
+    pip install -r requirements.txt
+    pip install -e .
 ```
 
 # Cli
