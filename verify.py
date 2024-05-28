@@ -62,6 +62,9 @@ def verify_vc(credential):
             return False
 
     verify_key = get_verify_key(vc)
-    data_verified = verify_key.verify(signature_jws+signature)
+    try:
+        data_verified = verify_key.verify(signature_jws+signature)
+    except nacl.exceptions.BadSignatureError:
+        return False
     return data_verified == signature
 
