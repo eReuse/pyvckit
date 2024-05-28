@@ -111,6 +111,30 @@ def test_verifiable_credential():
     assert verified
 
 
+def test_verifiable_credential_fail():
+    key = generate_keys()
+    did = generate_did(key)
+    signing_key = get_signing_key(key)
+
+    credential = {
+        "@context": "https://www.w3.org/2018/credentials/v1",
+        "id": "http://example.org/credentials/3731",
+        "type": ["VerifiableCredential"],
+        "credentialSubject": {
+            "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
+        },
+        "issuer": did,
+        "issuanceDate": now()
+    }
+
+    cred = json.dumps(credential)
+
+    vc = sign(cred, signing_key, did)
+    vc["id"] = "bar"
+    verified = verify_vc(json.dumps(vc))
+    assert not verified
+
+
 def test_verifiable_presentation():
     key = generate_keys()
     did = generate_did(key)
@@ -138,4 +162,64 @@ def test_verifiable_presentation():
     vp = sign_vp(holder_signing_key, holder_did, vc_json)
     verified = verify_vp(json.dumps(vp))
     assert verified
+
+
+def test_verifiable_presentation_fail1():
+    key = generate_keys()
+    did = generate_did(key)
+    signing_key = get_signing_key(key)
+
+    credential = {
+        "@context": "https://www.w3.org/2018/credentials/v1",
+        "id": "http://example.org/credentials/3731",
+        "type": ["VerifiableCredential"],
+        "credentialSubject": {
+            "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
+        },
+        "issuer": did,
+        "issuanceDate": now()
+    }
+
+    cred = json.dumps(credential)
+
+    vc = sign(cred, signing_key, did)
+    vc_json = json.dumps(vc)
+
+    holder_key = generate_keys()
+    holder_did = generate_did(holder_key)
+    holder_signing_key = get_signing_key(holder_key)
+    vp = sign_vp(holder_signing_key, holder_did, vc_json)
+    vp["verifiableCredential"][0]["id"] = "bar"
+    verified = verify_vp(json.dumps(vp))
+    assert not verified
+
+
+def test_verifiable_presentation_fail2():
+    key = generate_keys()
+    did = generate_did(key)
+    signing_key = get_signing_key(key)
+
+    credential = {
+        "@context": "https://www.w3.org/2018/credentials/v1",
+        "id": "http://example.org/credentials/3731",
+        "type": ["VerifiableCredential"],
+        "credentialSubject": {
+            "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
+        },
+        "issuer": did,
+        "issuanceDate": now()
+    }
+
+    cred = json.dumps(credential)
+
+    vc = sign(cred, signing_key, did)
+    vc_json = json.dumps(vc)
+
+    holder_key = generate_keys()
+    holder_did = generate_did(holder_key)
+    holder_signing_key = get_signing_key(holder_key)
+    vp = sign_vp(holder_signing_key, holder_did, vc_json)
+    vp["id"] = "http://example.org/presentations/3732"
+    verified = verify_vp(json.dumps(vp))
+    assert not verified
 
