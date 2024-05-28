@@ -5,7 +5,7 @@ PyVckit es una librería para:
  - generar presentaciones verificables
  - verificar presentaciones verificables
 
-Esta libreria esta fuertemente inspirada en (didkit de SpruceId)[https://github.com/spruceid/didkit/tree/main] y pretende mantener compatibilidad con ella.
+Esta libreria esta fuertemente inspirada en [didkit de SpruceId](https://github.com/spruceid/didkit) y pretende mantener compatibilidad con ella.
 
 Por ahora la criptografía soportada es solo EdDSA con una firma Ed25519Signature2018.
 
@@ -32,8 +32,8 @@ El modo de uso bajo la linea de comandos seria el siguiente:
   python did.py -n did -k keypair.json
 ```
 
-## generar una credencial de ejemplo:
-Se genera un ejemplo de credencial que es el que aparece en la plantilla credential_tmpl del fichero (template.py)[template.py]
+## generar una credencial firmada de ejemplo:
+Se genera un ejemplo de credencial que es el que aparece en la plantilla credential_tmpl del fichero [template.py](template.py)
 ```sh
   python sign_vc.py -k keypair.json > credential_signed.json
 ```
@@ -51,4 +51,59 @@ Se genera un ejemplo de credencial que es el que aparece en la plantilla credent
 ## verificat una presentación verificable:
 ```sh
   python verify_vp.py presentation_signed.json
+```
+
+# Uso como librería
+En los test podras encontrar ejemplos de uso. Ahora explicare los casos habituales
+
+## generar un par de claves:
+```python
+    from pyvckit.did import generate_keys
+    key = generate_keys()
+```
+
+## generar un identificador did:
+```python
+    from pyvckit.did import generate_keys, generate_did
+    key = generate_keys()
+    did = generate_did(key)
+```
+
+## generar una credencial firmada:
+Suponiendo que **credential** es una credencial válida.
+**credential** es una variable de tipo string
+```python
+    from pyvckit.did import generate_keys, generate_did, get_signing_key
+    from pyvckit.sign_vc import sign
+
+    key = generate_keys()
+    did = generate_did(key)
+    signing_key = get_signing_key(key)
+    vc = sign(credential, signing_key, did)
+```
+
+## verificar una credencial firmada:
+Suponiendo que **vc** es una credencial verificable correctamente firmada
+```python
+    import json
+    from pyvckit.verify import verify_vc
+
+    verified = verify_vc(json.dumps(vc))
+```
+
+## generar una presentación verificable:
+```python
+    from pyvckit.did import generate_keys, generate_did, get_signing_key
+    from pyvckit.sign_vp import sign_vp
+
+    holder_key = generate_keys()
+    holder_did = generate_did(holder_key)
+    holder_signing_key = get_signing_key(holder_key)
+    vp = sign_vp(holder_signing_key, holder_did, vc_string)
+```
+
+## verificat una presentación verificable:
+```python
+    from pyvckit.verify_vp import verify_vp
+    verified = verify_vp(json.dumps(vp))
 ```
