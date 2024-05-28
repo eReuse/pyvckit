@@ -33,7 +33,7 @@ El modo de uso bajo la linea de comandos seria el siguiente:
 ```
 
 ## generar una credencial firmada de ejemplo:
-Se genera un ejemplo de credencial que es el que aparece en la plantilla credential_tmpl del fichero [template.py](template.py)
+Se genera un ejemplo de credencial que es el que aparece en la plantilla credential_tmpl del fichero [templates.py](templates.py)
 ```sh
   python sign_vc.py -k keypair.json > credential_signed.json
 ```
