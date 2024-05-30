@@ -1,16 +1,19 @@
 import json
 import argparse
+import requests
 import multicodec
 import multiformats
 import nacl.signing
 import nacl.encoding
 
 from jwcrypto import jwk
+from urllib.parse import urlparse
 from nacl.signing import SigningKey
 from nacl.encoding import RawEncoder
+from templates import did_document_tmpl
 
 
-def key_to_did(public_key_bytes, type_did):
+def key_to_did(public_key_bytes, url):
     """did-key-format := 
        did:key:MULTIBASE(base58-btc, MULTICODEC(public-key-type, raw-public-key-bytes))"""
 
@@ -19,8 +22,11 @@ def key_to_did(public_key_bytes, type_did):
     # Multibase encode the hashed bytes
     did = multiformats.multibase.encode(mc, 'base58btc')
 
-    if type_did == "web":
-        return f"did:web:{did}"
+    if url:
+        u = urlparse(url)
+        domain = u.netloc
+        path = u.path.strip("/").replace("/", ":")
+        return f"did:web:{domain}:{path}:{did}"
 
     return f"did:key:{did}"
 
@@ -45,13 +51,13 @@ def get_signing_key(jwk_pr):
     return signing_key
 
 
-def generate_did(jwk_pr, type_did=None):
+def generate_did(jwk_pr, url=None):
     signing_key = get_signing_key(jwk_pr)
     verify_key = signing_key.verify_key
     public_key_bytes = verify_key.encode()
 
     # Generate the DID
-    did = key_to_did(public_key_bytes, type_did)
+    did = key_to_did(public_key_bytes, url)
     return did
 
 def generate_keys():
@@ -62,10 +68,44 @@ def generate_keys():
     return json.dumps(key_json)
 
 
+def gen_did_document(did, keys):
+    if did[:8] != "did:web:":
+        return "", ""
+    document = did_document_tmpl.copy()
+    webdid_owner = did+"#owner"
+    webdid_revocation = did+"#revocation"
+    document["id"] = did
+    document["verificationMethod"][0]["id"] = webdid_owner
+    document["verificationMethod"][0]["controller"] = did
+    document["verificationMethod"][0]["publicKeyJwk"]["x"] = keys["x"]
+    document["authentication"].append(webdid_owner)
+    document["assertionMethod"].append(webdid_owner)
+    document["service"][0]["id"] = webdid_revocation
+    document_fixed_serialized = json.dumps(document)
+    url = "https://" + "/".join(did.split(":")[2:]) + "/did.json"
+
+    return url, document_fixed_serialized
+    
+
+def resolve_did(did):
+    if did[:8] != "did:web:":
+        return
+    try:
+        url = "https://" + "/".join(did.split(":")[2:]) + "/did.json"
+        response = requests.get(url)
+    except Exception:
+        url = "http://" + "/".join(did.split(":")[2:]) + "/did.json"
+        response = requests.get(url)
+    if 200 <= response.status_code < 300:
+        return response.json()
+    
+
 def main():
     parser=argparse.ArgumentParser(description='Generates a new did or key pair')
     parser.add_argument("-k", "--key-path", required=False)
     parser.add_argument("-n", "--new", choices=['keys', 'did'])
+    parser.add_argument("-u", "--url")
+    parser.add_argument("-g", "--gen-doc")
     args=parser.parse_args()
 
     if args.new == 'keys':
@@ -77,12 +117,32 @@ def main():
         print("error: argument --key-path: expected one argument")
         return
 
+    if args.new == 'did' and args.url:
+        key = key_read(args.key_path)
+        did = generate_did(key, args.url)
+        print(did)
+        return
+
     if args.new == 'did':
         key = key_read(args.key_path)
         did = generate_did(key)
         print(did)
         return
     
+    if args.gen_doc and not args.key_path:
+        print("error: argument --key-path: expected one argument")
+        return
+
+    if args.gen_doc:
+        keys = json.loads(key_read(args.key_path))
+        if not keys.get("x"):
+            print("error: argument --key-path: not is valid")
+            return
+
+        url, doc = gen_did_document(args.gen_doc, keys)
+        # print(url)
+        print(doc)
+        return
 
 if __name__ == "__main__":
     main()

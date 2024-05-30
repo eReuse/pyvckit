@@ -27,3 +27,41 @@ presentation_tmpl = {
     "holder": "",
     "verifiableCredential": []
 }
+
+
+did_document_tmpl = {
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    {
+      "Ed25519VerificationKey2018": "https://w3id.org/security#Ed25519VerificationKey2018",
+      "publicKeyJwk": {
+        "@id": "https://w3id.org/security#publicKeyJwk",
+        "@type": "@json"
+      }
+    }
+  ],
+  "id": "",
+  "verificationMethod": [
+    {
+      "id": "",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "",
+      "publicKeyJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": ""
+      }
+    }
+  ],
+  "authentication": [
+  ],
+  "assertionMethod": [
+  ],
+  "service": [
+    {
+      "id": "",
+      "type": "RevocationBitmap2022",
+      "serviceEndpoint": "data:application/octet-stream;base64,eJyzMmAAAwADKABr"
+    }
+  ]
+}

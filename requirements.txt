@@ -25,3 +25,4 @@ Pillow
 multiformats
 PyNaCl
 py-multicodec
+pyroaring
