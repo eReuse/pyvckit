@@ -20,7 +20,7 @@ For now the installation is from the repository:
     pip install -e .
 ```
 
-#Cli
+# Cli
 The mode of use under the command line would be the following:
 
 ## generate a key pair:
@@ -29,8 +29,15 @@ The mode of use under the command line would be the following:
 ```
 
 ## generate a did identifier:
+
+### did key
 ```sh
-    python did.py -n did -k keypair.json
+  python did.py -n did -k keypair.json
+```
+
+### did web
+```sh
+  python did.py -n did -k keypair.json -u https://localhost/user1/dids/
 ```
 
 ## generate an example signed credential:
@@ -54,7 +61,7 @@ An example of a credential is generated, which is the one that appears in the cr
     python verify_vp.py presentation_signed.json
 ```
 
-# Use as a lib
+# Use as a library
 In the tests you can find examples of use. Now I will explain the usual cases
 
 ## generate a key pair:
@@ -64,10 +71,20 @@ In the tests you can find examples of use. Now I will explain the usual cases
 ```
 
 ## generate a did identifier:
+
+### did key
 ```python
     from pyvckit.did import generate_keys, generate_did
     key = generate_keys()
     did = generate_did(key)
+```
+
+### did web
+```python
+    from pyvckit.did import generate_keys, generate_did
+    key = generate_keys()
+    url = "https://localhost/user1/dids/"
+    did = generate_did(key, url)
 ```
 
 ## generate a signed credential:
@@ -107,4 +124,16 @@ Assuming **vc** is a properly signed verifiable credential
 ```python
     from pyvckit.verify_vp import verify_vp
     verified = verify_vp(json.dumps(vp))
+```
+
+## creation of did document:
+This command will create a json document and a url path where to place this document. The did must be a web did.
+This document is an example and in production it must be adapted to contain the revoked verifiable credentials.
+```python
+    from pyvckit.did import generate_keys, generate_did, gen_did_document
+
+    key = generate_keys()
+    url = "https://localhost/did-registry"
+    did = generate_did(key, url)
+    definitive_url, document = gen_did_document(did, key)
 ```

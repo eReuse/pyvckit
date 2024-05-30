@@ -29,8 +29,15 @@ El modo de uso bajo la linea de comandos seria el siguiente:
 ```
 
 ## generar un identificador did:
+
+### did key
 ```sh
   python did.py -n did -k keypair.json
+```
+
+### did web
+```sh
+  python did.py -n did -k keypair.json -u https://localhost/user1/dids/
 ```
 
 ## generar una credencial firmada de ejemplo:
@@ -54,6 +61,12 @@ Se genera un ejemplo de credencial que es el que aparece en la plantilla credent
   python verify_vp.py presentation_signed.json
 ```
 
+## creación del documento did:
+Este comando creara un documento json y una ruta url donde colocar este documento. El did tiene que ser un did web.
+```sh
+  python did.py -k keypair.json -g did:web:localhost:did-registry:z6MkiNc8xqJLcG7QR1wzD9HPs5oPQEaWNcVf92QsbppNiB7C
+```
+
 # Uso como librería
 En los test podras encontrar ejemplos de uso. Ahora explicare los casos habituales
 
@@ -64,10 +77,20 @@ En los test podras encontrar ejemplos de uso. Ahora explicare los casos habitual
 ```
 
 ## generar un identificador did:
+
+### did key
 ```python
     from pyvckit.did import generate_keys, generate_did
     key = generate_keys()
     did = generate_did(key)
+```
+
+### did web
+```python
+    from pyvckit.did import generate_keys, generate_did
+    key = generate_keys()
+    url = "https://localhost/user1/dids/"
+    did = generate_did(key, url)
 ```
 
 ## generar una credencial firmada:
@@ -107,4 +130,16 @@ Suponiendo que **vc** es una credencial verificable correctamente firmada
 ```python
     from pyvckit.verify_vp import verify_vp
     verified = verify_vp(json.dumps(vp))
+```
+
+## creación del documento did:
+Este comando creara un documento json y una ruta url donde colocar este documento. El did tiene que ser un did web.
+Este documento es un ejemplo y en producción hay que adaptarlo para contener las credenciales verificables revocadas.
+```python
+    from pyvckit.did import generate_keys, generate_did, gen_did_document
+
+    key = generate_keys()
+    url = "https://localhost/did-registry"
+    did = generate_did(key, url)
+    definitive_url, document = gen_did_document(did, key)
 ```
