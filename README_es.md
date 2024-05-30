@@ -56,13 +56,14 @@ Se genera un ejemplo de credencial que es el que aparece en la plantilla credent
   python sign_vp.py -k keypair.json -c credential_signed.json > presentation_signed.json
 ```
 
-## verificat una presentación verificable:
+## verificar una presentación verificable:
 ```sh
   python verify_vp.py presentation_signed.json
 ```
 
 ## creación del documento did:
 Este comando creara un documento json y una ruta url donde colocar este documento. El did tiene que ser un did web.
+Este documento es un ejemplo y en producción hay que adaptarlo para contener las credenciales verificables revocadas.
 ```sh
   python did.py -k keypair.json -g did:web:localhost:did-registry:z6MkiNc8xqJLcG7QR1wzD9HPs5oPQEaWNcVf92QsbppNiB7C
 ```

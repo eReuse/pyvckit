@@ -61,6 +61,13 @@ An example of a credential is generated, which is the one that appears in the cr
     python verify_vp.py presentation_signed.json
 ```
 
+## creation of did document:
+This command will create a json document and a url path where to place this document. The did must be a web did.
+This document is an example and in production it must be adapted to contain the revoked verifiable credentials.
+```sh
+  python did.py -k keypair.json -g did:web:localhost:did-registry:z6MkiNc8xqJLcG7QR1wzD9HPs5oPQEaWNcVf92QsbppNiB7C
+```
+
 # Use as a library
 In the tests you can find examples of use. Now I will explain the usual cases
 
