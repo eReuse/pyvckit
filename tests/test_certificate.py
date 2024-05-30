@@ -3,7 +3,7 @@ import multicodec
 import multiformats
 import nacl.encoding
 
-from did import generate_keys, generate_did, get_signing_key
+from did import generate_keys, generate_did, get_signing_key, gen_did_document
 from sign_vc import sign
 from sign_vp import sign_vp
 from verify import verify_vc
@@ -30,6 +30,42 @@ def test_generated_did_key():
     assert key_d.get('kid') == 'Generated'
     assert k_x == x
     assert key_d.get('d') is not None
+    assert did.split(":")[:-1] == ['did', 'key']
+
+    
+def test_generated_did_web():
+    key = generate_keys()
+    key_d = json.loads(key)
+    url = "https://localhost/did-registry"
+    did = generate_did(key, url)
+    _did = did.split("#")[0]
+    pub = _did.split(":")[-1]
+    mc = multiformats.multibase.decode(pub)
+    public_key_bytes = multicodec.remove_prefix(mc)
+    x = nacl.encoding.URLSafeBase64Encoder.encode(public_key_bytes).decode('utf-8')
+    k_x = key_d.get('x', '')
+    missing_padding = len(k_x) % 4
+    if missing_padding:
+        k_x += '=' * (4 - missing_padding)
+
+    assert key_d.get('kty') == 'OKP'
+    assert key_d.get('crv') == 'Ed25519'
+    assert key_d.get('kid') == 'Generated'
+    assert k_x == x
+    assert key_d.get('d') is not None
+    assert did.split(":")[:-1] == ['did', 'web', 'localhost', 'did-registry']
+
+
+def test_generated_did_document():
+    key = generate_keys()
+    key_d = json.loads(key)
+    url = "https://localhost/did-registry"
+    did = generate_did(key, url)
+    definitive_url, document = gen_did_document(did, key_d)
+    pubkey = did.split(":")[-1]
+    doc_id = json.loads(document)["id"]
+    assert doc_id == did
+    assert definitive_url == f"{url}/{pubkey}/did.json"
 
 
 def test_credential():
