@@ -9,8 +9,8 @@ test_requires = [
 
 setup(
     name="pyvckit",
-    version="0.0.1",
-    packages=find_packages(),
+    version="0.0.3",
+    packages=['pyvckit'],
     install_requires=[
         "jsonref",
         "PyLD",
