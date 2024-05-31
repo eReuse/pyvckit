@@ -1,9 +1,9 @@
 import json
 import argparse
-from utils import now
-from did import generate_did, get_signing_key, key_read
-from templates import credential_tmpl, proof_tmpl
-from sign import sign_proof
+from pyvckit.utils import now
+from pyvckit.did import generate_did, get_signing_key, key_read
+from pyvckit.templates import credential_tmpl, proof_tmpl
+from pyvckit.sign import sign_proof
 
 
 # source: https://github.com/mmlab-aueb/PyEd25519Signature2018/blob/master/signer.py

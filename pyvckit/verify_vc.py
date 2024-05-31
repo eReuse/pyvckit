@@ -1,5 +1,5 @@
 import argparse
-from verify import verify_vc
+from pyvckit.verify import verify_vc
 
 
 def get_credential(path_credential):

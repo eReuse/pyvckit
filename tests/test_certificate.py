@@ -3,12 +3,12 @@ import multicodec
 import multiformats
 import nacl.encoding
 
-from did import generate_keys, generate_did, get_signing_key, gen_did_document
-from sign_vc import sign
-from sign_vp import sign_vp
-from verify import verify_vc
-from verify_vp import verify_vp
-from utils import now
+from pyvckit.did import generate_keys, generate_did, get_signing_key, gen_did_document
+from pyvckit.sign_vc import sign
+from pyvckit.sign_vp import sign_vp
+from pyvckit.verify import verify_vc
+from pyvckit.verify_vp import verify_vp
+from pyvckit.utils import now
 
 
 def test_generated_did_key():

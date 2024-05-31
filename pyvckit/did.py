@@ -10,7 +10,7 @@ from jwcrypto import jwk
 from urllib.parse import urlparse
 from nacl.signing import SigningKey
 from nacl.encoding import RawEncoder
-from templates import did_document_tmpl
+from pyvckit.templates import did_document_tmpl
 
 
 def key_to_did(public_key_bytes, url):

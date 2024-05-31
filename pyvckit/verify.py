@@ -6,7 +6,7 @@ import multiformats
 
 from nacl.signing import VerifyKey
 
-from sign import to_jws_payload
+from pyvckit.sign import to_jws_payload
 
 
 def get_signing_input(payload):
