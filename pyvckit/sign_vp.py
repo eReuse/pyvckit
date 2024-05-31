@@ -1,10 +1,10 @@
 import json
 import argparse
 
-from utils import now
-from templates import presentation_tmpl, proof_tmpl
-from did import key_read, generate_did, get_signing_key
-from sign import sign_proof
+from pyvckit.utils import now
+from pyvckit.templates import presentation_tmpl, proof_tmpl
+from pyvckit.did import key_read, generate_did, get_signing_key
+from pyvckit.sign import sign_proof
 
 
 def sign_vp(signing_key, holder_did, vc):

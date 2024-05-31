@@ -6,12 +6,12 @@ import didkit
 # import nacl.encoding
 from ast import literal_eval
 
-from sign_vc import sign
-from sign_vp import sign_vp
-from verify import verify_vc
-from verify_vp import verify_vp
-from utils import now
-from did import generate_keys, generate_did, get_signing_key
+from pyvckit.sign_vc import sign
+from pyvckit.sign_vp import sign_vp
+from pyvckit.verify import verify_vc
+from pyvckit.verify_vp import verify_vp
+from pyvckit.utils import now
+from pyvckit.did import generate_keys, generate_did, get_signing_key
 
 
 def verify_credential(vc):
