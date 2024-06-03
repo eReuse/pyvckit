@@ -9,9 +9,11 @@ Remote document loader using Requests.
 .. moduleauthor:: Tim McNamara <tim.mcnamara@okfn.org>
 .. moduleauthor:: Olaf Conradi <olaf@conradi.org>
 """
+import re
 import string
 import json
 import urllib.parse as urllib_parse
+from pyld import jsonld
 
 from pyld.jsonld import (JsonLdError, parse_link_header, LINK_HEADER_REL)
 
@@ -20,7 +22,6 @@ def get_cache():
     with open("cache_context.json") as f:
         doc_str = f.read()
         if doc_str:
-            # import pdb; pdb.set_trace()
             return json.loads(doc_str)
     return {}
 
@@ -48,7 +49,6 @@ def requests_document_loader(secure=False, **kwargs):
 
         :return: the RemoteDocument.
         """
-        # import pdb; pdb.set_trace()
         cache = get_cache()
         if cache.get(url):
             return cache[url]
@@ -109,11 +109,11 @@ def requests_document_loader(secure=False, **kwargs):
                         not re.match(r'^application\/(\w*\+)?json$', content_type)):
                     doc['contentType'] = 'application/ld+json'
                     doc['documentUrl'] = jsonld.prepend_base(url, linked_alternate['target'])
-            # import pdb; pdb.set_trace()
+
             cache[url] = doc
-            f = open("cache_context.json", "w")
-            f.write(json.dumps(cache))
-            f.close()
+            with open("cache_context.json", "w") as f:
+                f.write(json.dumps(cache))
+
             return doc
         except JsonLdError as e:
             raise e
