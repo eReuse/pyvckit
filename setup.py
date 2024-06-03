@@ -9,7 +9,7 @@ test_requires = [
 
 setup(
     name="pyvckit",
-    version="0.0.4",
+    version="0.0.6",
     packages=['pyvckit'],
     install_requires=[
         "jsonref",
