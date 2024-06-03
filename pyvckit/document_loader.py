@@ -19,10 +19,14 @@ from pyld.jsonld import (JsonLdError, parse_link_header, LINK_HEADER_REL)
 
 
 def get_cache():
-    with open("cache_context.json") as f:
-        doc_str = f.read()
-        if doc_str:
-            return json.loads(doc_str)
+    try:
+        with open("cache_context.json") as f:
+            doc_str = f.read()
+            if doc_str:
+                return json.loads(doc_str)
+    except FileNotFoundError:
+        pass
+
     return {}
 
 
