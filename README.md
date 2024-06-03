@@ -25,47 +25,47 @@ The mode of use under the command line would be the following:
 
 ## generate a key pair:
 ```sh
-    python did.py -n keys > keypair.json
+    python pyvckit/did.py -n keys > keypair.json
 ```
 
 ## generate a did identifier:
 
 ### did key
 ```sh
-  python did.py -n did -k keypair.json
+  python pyvckit/did.py -n did -k keypair.json
 ```
 
 ### did web
 ```sh
-  python did.py -n did -k keypair.json -u https://localhost/user1/dids/
+  python pyvckit/did.py -n did -k keypair.json -u https://localhost/user1/dids/
 ```
 
 ## generate an example signed credential:
 An example of a credential is generated, which is the one that appears in the credential_tmpl template in the file [templates.py](templates.py)
 ```sh
-    python sign_vc.py -k keypair.json > credential_signed.json
+    python pyvckit/sign_vc.py -k keypair.json > credential_signed.json
 ```
 
 ## verify a signed credential:
 ```sh
-    python verify_vc.py credential_signed.json
+    python pyvckit/verify_vc.py credential_signed.json
 ```
 
 ## generate a verifiable presentation:
 ```sh
-    python sign_vp.py -k keypair.json -c credential_signed.json > presentation_signed.json
+    python pyvckit/sign_vp.py -k keypair.json -c credential_signed.json > presentation_signed.json
 ```
 
 ## verify a verifiable presentation:
 ```sh
-    python verify_vp.py presentation_signed.json
+    python pyvckit/verify_vp.py presentation_signed.json
 ```
 
 ## creation of did document:
 This command will create a json document and a url path where to place this document. The did must be a web did.
 This document is an example and in production it must be adapted to contain the revoked verifiable credentials.
 ```sh
-  python did.py -k keypair.json -g did:web:localhost:did-registry:z6MkiNc8xqJLcG7QR1wzD9HPs5oPQEaWNcVf92QsbppNiB7C
+  python pyvckit/did.py -k keypair.json -g did:web:localhost:did-registry:z6MkiNc8xqJLcG7QR1wzD9HPs5oPQEaWNcVf92QsbppNiB7C
 ```
 
 # Use as a library

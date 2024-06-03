@@ -25,47 +25,47 @@ El modo de uso bajo la linea de comandos seria el siguiente:
 
 ## generar un par de claves:
 ```sh
-  python did.py -n keys > keypair.json
+  python pyvckit/did.py -n keys > keypair.json
 ```
 
 ## generar un identificador did:
 
 ### did key
 ```sh
-  python did.py -n did -k keypair.json
+  python pyvckit/did.py -n did -k keypair.json
 ```
 
 ### did web
 ```sh
-  python did.py -n did -k keypair.json -u https://localhost/user1/dids/
+  python pyvckit/did.py -n did -k keypair.json -u https://localhost/user1/dids/
 ```
 
 ## generar una credencial firmada de ejemplo:
 Se genera un ejemplo de credencial que es el que aparece en la plantilla credential_tmpl del fichero [templates.py](templates.py)
 ```sh
-  python sign_vc.py -k keypair.json > credential_signed.json
+  python pyvckit/sign_vc.py -k keypair.json > credential_signed.json
 ```
 
 ## verificar una credencial firmada:
 ```sh
-  python verify_vc.py credential_signed.json
+  python pyvckit/verify_vc.py credential_signed.json
 ```
 
 ## generar una presentación verificable:
 ```sh
-  python sign_vp.py -k keypair.json -c credential_signed.json > presentation_signed.json
+  python pyvckit/sign_vp.py -k keypair.json -c credential_signed.json > presentation_signed.json
 ```
 
 ## verificar una presentación verificable:
 ```sh
-  python verify_vp.py presentation_signed.json
+  python pyvckit/verify_vp.py presentation_signed.json
 ```
 
 ## creación del documento did:
 Este comando creara un documento json y una ruta url donde colocar este documento. El did tiene que ser un did web.
 Este documento es un ejemplo y en producción hay que adaptarlo para contener las credenciales verificables revocadas.
 ```sh
-  python did.py -k keypair.json -g did:web:localhost:did-registry:z6MkiNc8xqJLcG7QR1wzD9HPs5oPQEaWNcVf92QsbppNiB7C
+  python pyvckit/did.py -k keypair.json -g did:web:localhost:did-registry:z6MkiNc8xqJLcG7QR1wzD9HPs5oPQEaWNcVf92QsbppNiB7C
 ```
 
 # Uso como librería
