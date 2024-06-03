@@ -2,6 +2,10 @@ import hashlib
 import nacl.signing
 import nacl.encoding
 from pyld import jsonld
+from pyvckit.document_loader import requests_document_loader
+
+
+jsonld.set_document_loader(requests_document_loader())
 
 
 # https://github.com/spruceid/ssi/blob/main/ssi-jws/src/lib.rs#L75
