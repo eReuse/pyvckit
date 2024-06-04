@@ -12,7 +12,7 @@ def sign_vp(signing_key, holder_did, vc):
     presentation["verifiableCredential"].append(json.loads(vc))
     presentation["holder"] = holder_did
 
-    _did = holder_did + "#" + holder_did.split("did:key:")[1]
+    _did = holder_did + "#" + holder_did.split(":")[-1]
     proof = json.loads(proof_tmpl)
     proof['verificationMethod'] = _did
     proof['created'] = now()

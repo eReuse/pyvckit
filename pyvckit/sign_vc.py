@@ -10,7 +10,7 @@ from pyvckit.sign import sign_proof
 
 def sign(credential, key, issuer_did):
     document = json.loads(credential)
-    _did = issuer_did + "#" + issuer_did.split("did:key:")[1]
+    _did = issuer_did + "#" + issuer_did.split(":")[-1]
     proof = json.loads(proof_tmpl)
     proof['verificationMethod'] = _did
     proof['created'] = now()
