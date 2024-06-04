@@ -71,7 +71,7 @@ def generate_keys():
 def gen_did_document(did, keys):
     if did[:8] != "did:web:":
         return "", ""
-    document = did_document_tmpl.copy()
+    document = json.loads(did_document_tmpl)
     webdid_owner = did+"#owner"
     webdid_revocation = did+"#revocation"
     document["id"] = did
