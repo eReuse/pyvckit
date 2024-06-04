@@ -8,12 +8,12 @@ from pyvckit.sign import sign_proof
 
 
 def sign_vp(signing_key, holder_did, vc):
-    presentation = presentation_tmpl.copy()
+    presentation = json.loads(presentation_tmpl)
     presentation["verifiableCredential"].append(json.loads(vc))
     presentation["holder"] = holder_did
 
     _did = holder_did + "#" + holder_did.split("did:key:")[1]
-    proof = proof_tmpl.copy()
+    proof = json.loads(proof_tmpl)
     proof['verificationMethod'] = _did
     proof['created'] = now()
 

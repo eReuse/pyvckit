@@ -11,7 +11,7 @@ from pyvckit.sign import sign_proof
 def sign(credential, key, issuer_did):
     document = json.loads(credential)
     _did = issuer_did + "#" + issuer_did.split("did:key:")[1]
-    proof = proof_tmpl.copy()
+    proof = json.loads(proof_tmpl)
     proof['verificationMethod'] = _did
     proof['created'] = now()
 
@@ -31,7 +31,7 @@ def main():
         did = generate_did(key)
         signing_key = get_signing_key(key)
 
-        credential = credential_tmpl.copy()
+        credential = json.loads(credential_tmpl)
         credential["issuer"] = did
         credential["issuanceDate"] = now()
         cred = json.dumps(credential)
