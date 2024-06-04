@@ -26,7 +26,9 @@ def key_to_did(public_key_bytes, url):
         u = urlparse(url)
         domain = u.netloc
         path = u.path.strip("/").replace("/", ":")
-        return f"did:web:{domain}:{path}:{did}"
+        if path:
+            return f"did:web:{domain}:{path}:{did}"
+        return f"did:web:{domain}:{did}"
 
     return f"did:key:{did}"
 
