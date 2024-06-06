@@ -10,7 +10,9 @@ credential_tmpl = """{
     "credentialSubject": {
         "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M"
     },
-    "issuer": "",
+    "issuer": {
+      "id": ""
+    },
     "issuanceDate": ""
 }"""
 

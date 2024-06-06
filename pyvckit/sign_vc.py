@@ -32,7 +32,7 @@ def main():
         signing_key = get_signing_key(key)
 
         credential = json.loads(credential_tmpl)
-        credential["issuer"] = did
+        credential["issuer"]["id"] = did
         credential["issuanceDate"] = now()
         cred = json.dumps(credential)
 
