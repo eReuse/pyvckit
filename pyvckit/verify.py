@@ -1,12 +1,16 @@
 import json
+import zlib
+import base64
 import nacl.encoding
 import nacl.signing
 import multicodec
 import multiformats
 
 from nacl.signing import VerifyKey
+from pyroaring import BitMap
 
 from pyvckit.sign import to_jws_payload
+from pyvckit.did import resolve_did
 
 
 def get_signing_input(payload):
@@ -48,6 +52,14 @@ def verify_vc(credential):
     if not message:
         return False
 
+    did_issuer = vc.get("issuer", {}) or vc.get("holder", {})
+    if isinstance(did_issuer, dict):
+        did_issuer = did_issuer.get("id")
+
+    did_issuer_method = vc["proof"]["verificationMethod"].split("#")[0]
+    if did_issuer != did_issuer_method:
+        return False
+
     header_b64, signature = get_signing_input(message)
     header_jws, signature_jws = jws_split(jws)
     
@@ -57,14 +69,42 @@ def verify_vc(credential):
     header_jws_json = json.loads(
         nacl.encoding.URLSafeBase64Encoder.decode(header_jws)
     )
+
     for k, v in header.items():
         if header_jws_json.get(k) != v:
             return False
 
     verify_key = get_verify_key(vc)
+
     try:
         data_verified = verify_key.verify(signature_jws+signature)
     except nacl.exceptions.BadSignatureError:
         return False
-    return data_verified == signature
+
+    if data_verified != signature:
+        return False
+
+
+    if "credentialStatus" in vc:
+        # NOTE: THIS FIELD SHOULD BE SERIALIZED AS AN INTEGER,
+        # BUT IOTA DOCUMENTAITON SERIALIZES IT AS A STRING.
+        # DEFENSIVE CAST ADDED JUST IN CASE.
+        revocation_index = int(vc["credentialStatus"]["revocationBitmapIndex"])
+
+        if did_issuer[:7] == "did:web":  # Only DID:WEB can revoke
+            issuer_did_document = resolve_did(did_issuer)
+            issuer_revocation_list = issuer_did_document["service"][0]
+            assert issuer_revocation_list["type"] == "RevocationBitmap2022"
+            revocation_bitmap = BitMap.deserialize(
+                zlib.decompress(
+                    base64.b64decode(
+                        issuer_revocation_list["serviceEndpoint"].rsplit(",")[1].encode('utf-8')
+                    )
+                )
+            )
+            if revocation_index in revocation_bitmap:
+                # Credential has been revoked by the issuer
+                return False
+
+    return True
 
