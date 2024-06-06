@@ -1,7 +1,11 @@
+import json
 import hashlib
 import nacl.signing
 import nacl.encoding
 from pyld import jsonld
+from pyvckit.utils import now
+from pyvckit.did import get_signing_key
+from pyvckit.templates import proof_tmpl
 from pyvckit.document_loader import requests_document_loader
 
 
@@ -67,4 +71,17 @@ def sign_proof(document, proof, key):
     proof["jws"] = jws.decode('utf-8')[:-2]
     return proof
 
+
+def sign(credential, key, issuer_did):
+    signing_key = get_signing_key(key)
+    document = json.loads(credential)
+    _did = issuer_did + "#" + issuer_did.split(":")[-1]
+    proof = json.loads(proof_tmpl)
+    proof['verificationMethod'] = _did
+    proof['created'] = now()
+
+    sign_proof(document, proof, signing_key)
+    del proof['@context']
+    document['proof'] = proof
+    return document
 

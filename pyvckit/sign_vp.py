@@ -1,26 +1,16 @@
 import json
 import argparse
 
-from pyvckit.utils import now
-from pyvckit.templates import presentation_tmpl, proof_tmpl
-from pyvckit.did import key_read, generate_did, get_signing_key
-from pyvckit.sign import sign_proof
+from pyvckit.templates import presentation_tmpl
+from pyvckit.did import key_read, generate_did
+from pyvckit.sign import sign
 
 
-def sign_vp(signing_key, holder_did, vc):
+def get_presentation(vc, holder_did):
     presentation = json.loads(presentation_tmpl)
     presentation["verifiableCredential"].append(json.loads(vc))
     presentation["holder"] = holder_did
-
-    _did = holder_did + "#" + holder_did.split(":")[-1]
-    proof = json.loads(proof_tmpl)
-    proof['verificationMethod'] = _did
-    proof['created'] = now()
-
-    sign_proof(presentation, proof, signing_key)
-    del proof['@context']
-    presentation['proof'] = proof
-    return presentation
+    return json.dumps(presentation)
 
 
 def main():
@@ -39,8 +29,8 @@ def main():
 
         key = key_read(args.key_path)
         did = generate_did(key)
-        signing_key = get_signing_key(key)
-        vp = sign_vp(signing_key, did, vc)
+        unsigned_vp = get_presentation(vc, did)
+        vp = sign(unsigned_vp, key, did)
         print(json.dumps(vp, separators=(',', ':')))
 
         return

@@ -3,11 +3,11 @@ import multicodec
 import multiformats
 import nacl.encoding
 
-from pyvckit.did import generate_keys, generate_did, get_signing_key, gen_did_document
-from pyvckit.sign_vc import sign
-from pyvckit.sign_vp import sign_vp
+from pyvckit.did import generate_keys, generate_did, gen_did_document
+from pyvckit.sign import sign
+from pyvckit.sign_vp import get_presentation
 from pyvckit.verify import verify_vc
-from pyvckit.verify_vp import verify_vp
+from pyvckit.verify import verify_vp
 from pyvckit.utils import now
 
 
@@ -71,7 +71,6 @@ def test_generated_did_document():
 def test_credential():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -89,7 +88,7 @@ def test_credential():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     header = 'eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9'
     assert vc.get('proof', {}).get('jws') is not None
     assert header in vc.get('proof', {}).get('jws')
@@ -99,7 +98,6 @@ def test_credential():
 def test_presentation():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -117,13 +115,13 @@ def test_presentation():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     vc_json = json.dumps(vc)
 
     holder_key = generate_keys()
     holder_did = generate_did(holder_key)
-    holder_signing_key = get_signing_key(holder_key)
-    vp = sign_vp(holder_signing_key, holder_did, vc_json)
+    unsigned_vp = get_presentation(vc_json, holder_did)
+    vp = sign(unsigned_vp, holder_key, holder_did)
     header = 'eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9'
     assert vp.get('proof', {}).get('jws') is not None
     assert header in vp.get('proof', {}).get('jws')
@@ -133,7 +131,6 @@ def test_presentation():
 def test_verifiable_credential():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -151,7 +148,7 @@ def test_verifiable_credential():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     verified = verify_vc(json.dumps(vc))
     assert verified
 
@@ -159,7 +156,6 @@ def test_verifiable_credential():
 def test_verifiable_presentation():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -177,14 +173,14 @@ def test_verifiable_presentation():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     vc_json = json.dumps(vc)
     assert verify_vc(json.dumps(vc))
 
     holder_key = generate_keys()
     holder_did = generate_did(holder_key)
-    holder_signing_key = get_signing_key(holder_key)
-    vp = sign_vp(holder_signing_key, holder_did, vc_json)
+    unsigned_vp = get_presentation(vc_json, holder_did)
+    vp = sign(unsigned_vp, holder_key, holder_did)
     verified = verify_vp(json.dumps(vp))
     assert verified
 
@@ -192,7 +188,6 @@ def test_verifiable_presentation():
 def test_verifiable_credential_fail():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -210,7 +205,7 @@ def test_verifiable_credential_fail():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     vc["id"] = "bar"
     verified = verify_vc(json.dumps(vc))
     assert not verified
@@ -219,7 +214,6 @@ def test_verifiable_credential_fail():
 def test_verifiable_presentation_fail1():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -237,13 +231,13 @@ def test_verifiable_presentation_fail1():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     vc_json = json.dumps(vc)
 
     holder_key = generate_keys()
     holder_did = generate_did(holder_key)
-    holder_signing_key = get_signing_key(holder_key)
-    vp = sign_vp(holder_signing_key, holder_did, vc_json)
+    unsigned_vp = get_presentation(vc_json, holder_did)
+    vp = sign(unsigned_vp, holder_key, holder_did)
     vp["verifiableCredential"][0]["id"] = "bar"
     verified = verify_vp(json.dumps(vp))
     assert not verified
@@ -252,7 +246,6 @@ def test_verifiable_presentation_fail1():
 def test_verifiable_presentation_fail2():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -270,13 +263,13 @@ def test_verifiable_presentation_fail2():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     vc_json = json.dumps(vc)
 
     holder_key = generate_keys()
     holder_did = generate_did(holder_key)
-    holder_signing_key = get_signing_key(holder_key)
-    vp = sign_vp(holder_signing_key, holder_did, vc_json)
+    unsigned_vp = get_presentation(vc_json, holder_did)
+    vp = sign(unsigned_vp, holder_key, holder_did)
     vp["id"] = "http://example.org/presentations/3732"
     verified = verify_vp(json.dumps(vp))
     assert not verified

@@ -44,7 +44,7 @@ def jws_split(jws):
     signature = nacl.encoding.URLSafeBase64Encoder.decode(sig_b64.encode())
     return header.encode(), signature
 
-    
+
 def verify_vc(credential):
     vc = json.loads(credential)
     header = {"alg": "EdDSA", "crit": ["b64"], "b64": False}
@@ -62,7 +62,7 @@ def verify_vc(credential):
 
     header_b64, signature = get_signing_input(message)
     header_jws, signature_jws = jws_split(jws)
-    
+
     if header_jws != header_b64:
         return False
 
@@ -108,3 +108,16 @@ def verify_vc(credential):
 
     return True
 
+
+def verify_vp(presentation):
+    vp = json.loads(presentation)
+
+    if not verify_vc(presentation):
+        return False
+
+    for vc in vp['verifiableCredential']:
+        vc_str = json.dumps(vc)
+        if not verify_vc(vc_str):
+            return False
+
+    return True

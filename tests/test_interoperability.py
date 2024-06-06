@@ -6,12 +6,13 @@ import didkit
 # import nacl.encoding
 from ast import literal_eval
 
-from pyvckit.sign_vc import sign
-from pyvckit.sign_vp import sign_vp
+# from pyvckit.sign_vc import sign
+from pyvckit.sign import sign
+from pyvckit.sign_vp import get_presentation
 from pyvckit.verify import verify_vc
-from pyvckit.verify_vp import verify_vp
+from pyvckit.verify import verify_vp
 from pyvckit.utils import now
-from pyvckit.did import generate_keys, generate_did, get_signing_key
+from pyvckit.did import generate_keys, generate_did
 
 
 def verify_credential(vc):
@@ -96,7 +97,6 @@ def test_key_from_pyvckit():
 def test_pyvckit_credential_validated_from_didkit():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -113,7 +113,7 @@ def test_pyvckit_credential_validated_from_didkit():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     result = verify_credential(json.dumps(vc))
     assert result == '{"checks":["proof"],"warnings":[],"errors":[]}'
 
@@ -144,7 +144,6 @@ def test_didkit_credential_validated_from_pyvckit():
 def test_pyvckit_presentation_validated_from_didkit():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -161,13 +160,13 @@ def test_pyvckit_presentation_validated_from_didkit():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     vc_json = json.dumps(vc)
 
     holder_key = generate_keys()
     holder_did = generate_did(holder_key)
-    holder_signing_key = get_signing_key(holder_key)
-    vp = sign_vp(holder_signing_key, holder_did, vc_json)
+    unsigned_vp = get_presentation(vc_json, holder_did)
+    vp = sign(unsigned_vp, holder_key, holder_did)
 
     result = verify_presentation(json.dumps(vp))
     assert result
@@ -176,7 +175,6 @@ def test_pyvckit_presentation_validated_from_didkit():
 def test_fail_pyvckit_presentation_validated_from_didkit():
     key = generate_keys()
     did = generate_did(key)
-    signing_key = get_signing_key(key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -193,13 +191,13 @@ def test_fail_pyvckit_presentation_validated_from_didkit():
 
     cred = json.dumps(credential)
 
-    vc = sign(cred, signing_key, did)
+    vc = sign(cred, key, did)
     vc_json = json.dumps(vc)
 
     holder_key = generate_keys()
     holder_did = generate_did(holder_key)
-    holder_signing_key = get_signing_key(holder_key)
-    vp = sign_vp(holder_signing_key, holder_did, vc_json)
+    unsigned_vp = get_presentation(vc_json, holder_did)
+    vp = sign(unsigned_vp, holder_key, holder_did)
     vp["verifiableCredential"][0]["id"] = "bar"
     vp_fail = json.dumps(vp)
 
