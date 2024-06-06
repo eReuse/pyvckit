@@ -144,3 +144,11 @@ This document is an example and in production it must be adapted to contain the 
     did = generate_did(key, url)
     definitive_url, document = gen_did_document(did, key)
 ```
+
+# Differences with didkit from spruceId:
+Although there is didkit support, there are some small differences in behavior.
+
+## Namespaces:
+In didkit it is necessary to define in the context every name, (key) used in the credential or else both the signature and the verification will fail.
+In pyvckit if a name, (key) is used but is not defined in the context, then that signature or verification will filter out that part of the credential and ignore it as if it did not exist.
+The signature will be made by deleting that undefined part.

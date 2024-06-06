@@ -144,3 +144,12 @@ Este documento es un ejemplo y en producción hay que adaptarlo para contener la
     did = generate_did(key, url)
     definitive_url, document = gen_did_document(did, key)
 ```
+
+# Diferencias con didkit de spruceId:
+Aunque hay compatibilidad con didkit, hay algunas pequeñas diferencias en el comportamiento.
+
+## Espacios de nombres:
+En didkit es necesario definir en el contexto todo nombre, (clave) usada en la credencial o si no fallará tanto la firma como la verificación.
+En pyvckit si un nombre, (clave) se usa pero no esta definido en el contexto, entonces esa firma o verificación filtrará esa parte de la credencial y la omitirá como si no existiera.
+La firma se hará borrando esa parte no definida.
+
