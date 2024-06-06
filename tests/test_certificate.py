@@ -80,7 +80,10 @@ def test_credential():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did,
+            "name": ""
+        },
         "issuanceDate": now()
     }
 
@@ -105,7 +108,10 @@ def test_presentation():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did,
+            "name": ""
+        },
         "issuanceDate": now()
     }
 
@@ -136,7 +142,10 @@ def test_verifiable_credential():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did,
+            "name": ""
+        },
         "issuanceDate": now()
     }
 
@@ -159,7 +168,10 @@ def test_verifiable_presentation():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did,
+            "name": ""
+        },
         "issuanceDate": now()
     }
 
@@ -189,7 +201,10 @@ def test_verifiable_credential_fail():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did,
+            "name": ""
+        },
         "issuanceDate": now()
     }
 
@@ -213,7 +228,10 @@ def test_verifiable_presentation_fail1():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did,
+            "name": ""
+        },
         "issuanceDate": now()
     }
 
@@ -243,7 +261,10 @@ def test_verifiable_presentation_fail2():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did,
+            "name": ""
+        },
         "issuanceDate": now()
     }
 

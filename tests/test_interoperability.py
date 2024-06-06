@@ -105,7 +105,9 @@ def test_pyvckit_credential_validated_from_didkit():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did
+        },
         "issuanceDate": now()
     }
 
@@ -127,7 +129,9 @@ def test_didkit_credential_validated_from_pyvckit():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did
+        },
         "issuanceDate": now()
     }
 
@@ -149,7 +153,9 @@ def test_pyvckit_presentation_validated_from_didkit():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did
+        },
         "issuanceDate": now()
     }
 
@@ -179,7 +185,9 @@ def test_fail_pyvckit_presentation_validated_from_didkit():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did
+        },
         "issuanceDate": now()
     }
 
@@ -213,7 +221,9 @@ def test_didkit_presentation_validated_from_pyvckit():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did
+        },
         "issuanceDate": now()
     }
     cred_signed = render_and_sign_credential(credential, key)
@@ -239,7 +249,9 @@ def test_fail_didkit_presentation_validated_from_pyvckit():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did
+        },
         "issuanceDate": now()
     }
     cred_signed = render_and_sign_credential(credential, key)
@@ -268,7 +280,9 @@ def test_fail2_didkit_presentation_validated_from_pyvckit():
         "credentialSubject": {
             "id": "did:key:z6MkgGXSJoacuuNdwU1rGfPpFH72GACnzykKTxzCCTZs6Z2M",
         },
-        "issuer": did,
+        "issuer": {
+            "id": did
+        },
         "issuanceDate": now()
     }
     cred_signed = render_and_sign_credential(credential, key)
