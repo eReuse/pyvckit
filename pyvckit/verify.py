@@ -31,8 +31,10 @@ def get_message(vc):
     return jws+"==", to_jws_payload(document, proof)
 
 
-def get_pubkey_bytes_from_diddocument(did):
-    did_document = resolve_did(did)
+def get_pubkey_bytes_from_diddocument(did, did_document=None):
+    if not did_document:
+        did_document = resolve_did(did)
+
     if not did_document:
         return
 
@@ -42,10 +44,13 @@ def get_pubkey_bytes_from_diddocument(did):
             return get_public_key_bytes(pub_key.get("x", ""))
 
 
-def get_verify_key(vc):
+def get_verify_key(vc, did_document=None):
     did = vc["proof"]["verificationMethod"].split("#")[0]
     if did[:7] == "did:web":
-        public_key_bytes = get_pubkey_bytes_from_diddocument(did)
+        public_key_bytes = get_pubkey_bytes_from_diddocument(
+            did,
+            did_document=did_document
+        )
         if not public_key_bytes:
             return False
     else:
@@ -90,7 +95,11 @@ def verify_vc(credential):
         if header_jws_json.get(k) != v:
             return False
 
-    verify_key = get_verify_key(vc)
+    did_document = {}
+    if did_issuer[:7] == "did:web":
+        did_document = resolve_did(did_issuer)
+
+    verify_key = get_verify_key(vc, did_document=did_document)
 
     try:
         data_verified = verify_key.verify(signature_jws+signature)
@@ -107,9 +116,8 @@ def verify_vc(credential):
         # DEFENSIVE CAST ADDED JUST IN CASE.
         revocation_index = int(vc["credentialStatus"]["revocationBitmapIndex"])
 
-        if did_issuer[:7] == "did:web":  # Only DID:WEB can revoke
-            issuer_did_document = resolve_did(did_issuer)
-            issuer_revocation_list = issuer_did_document["service"][0]
+        if did_document:  # Only DID:WEB can revoke
+            issuer_revocation_list = did_document["service"][0]
             assert issuer_revocation_list["type"] == "RevocationBitmap2022"
             revocation_bitmap = BitMap.deserialize(
                 zlib.decompress(
