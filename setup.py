@@ -9,7 +9,7 @@ test_requires = [
 
 setup(
     name="pyvckit",
-    version="0.0.9",
+    version="0.0.10",
     packages=['pyvckit'],
     install_requires=[
         "jsonref",
@@ -48,7 +48,7 @@ setup(
     description="signature and validation of verifiable credential and verifiable presentation",
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
-    url="https://gitea.pangea.org/ereuse/pyvckit",
+    url="https://farga.pangea.org/ereuse/pyvckit",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
@@ -56,4 +56,3 @@ setup(
     ],
     python_requires='>=3.9',
 )
-
