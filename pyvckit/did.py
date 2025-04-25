@@ -109,12 +109,21 @@ def gen_did_document(did, keys):
 def resolve_did(did):
     if did[:8] != "did:web:":
         return
+
+    sdid = did[8:].split(":")
     try:
-        url = "https://" + "/".join(did.split(":")[2:]) + "/did.json"
+        if len(sdid) > 2:
+            url = "https://{}/did.json".format("/".join(sdid))
+        elif len(sdid) == 2:
+            url = "https://{}/.wellknown/{}/did.json".format(*sdid)
         response = requests.get(url)
     except Exception:
-        url = "http://" + "/".join(did.split(":")[2:]) + "/did.json"
+        if len(sdid) > 2:
+            url = "http://{}/did.json".format("/".join(sdid))
+        elif len(sdid) == 2:
+            url = "http://{}/.wellknown/{}/did.json".format(*sdid)
         response = requests.get(url)
+
     if 200 <= response.status_code < 300:
         return response.json()
 
