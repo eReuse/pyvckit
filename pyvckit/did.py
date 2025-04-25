@@ -115,13 +115,13 @@ def resolve_did(did):
         if len(sdid) > 2:
             url = "https://{}/did.json".format("/".join(sdid))
         elif len(sdid) == 2:
-            url = "https://{}/.wellknown/{}/did.json".format(*sdid)
+            url = "https://{}/.well-known/{}/did.json".format(*sdid)
         response = requests.get(url)
     except Exception:
         if len(sdid) > 2:
             url = "http://{}/did.json".format("/".join(sdid))
         elif len(sdid) == 2:
-            url = "http://{}/.wellknown/{}/did.json".format(*sdid)
+            url = "http://{}/.well-known/{}/did.json".format(*sdid)
         response = requests.get(url)
 
     if 200 <= response.status_code < 300:
