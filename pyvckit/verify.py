@@ -10,7 +10,7 @@ from nacl.signing import VerifyKey
 from pyroaring import BitMap
 
 from pyvckit.sign import to_jws_payload
-from pyvckit.did import resolve_did
+from pyvckit.did import resolve_did, get_public_key_bytes
 
 
 def get_signing_input(payload):
@@ -31,11 +31,27 @@ def get_message(vc):
     return jws+"==", to_jws_payload(document, proof)
 
 
+def get_pubkey_bytes_from_diddocument(did):
+    did_document = resolve_did(did)
+    if not did_document:
+        return
+
+    for x in did_document.get("verificationMethod", []):
+        pub_key = x.get("publicKeyJwk", {})
+        if pub_key.get('crv', '').lower() == "ed25519":
+            return get_public_key_bytes(pub_key.get("x", ""))
+
+
 def get_verify_key(vc):
     did = vc["proof"]["verificationMethod"].split("#")[0]
-    pub = did.split(":")[-1]
-    mc = multiformats.multibase.decode(pub)
-    public_key_bytes = multicodec.remove_prefix(mc)
+    if did[:7] == "did:web":
+        public_key_bytes = get_pubkey_bytes_from_diddocument(did)
+        if not public_key_bytes:
+            return False
+    else:
+        pub = did.split(":")[-1]
+        mc = multiformats.multibase.decode(pub)
+        public_key_bytes = multicodec.remove_prefix(mc)
     return VerifyKey(public_key_bytes)
 
 

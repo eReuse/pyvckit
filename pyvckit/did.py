@@ -14,7 +14,7 @@ from pyvckit.templates import did_document_tmpl
 
 
 def key_to_did(public_key_bytes, url):
-    """did-key-format := 
+    """did-key-format :=
        did:key:MULTIBASE(base58-btc, MULTICODEC(public-key-type, raw-public-key-bytes))"""
 
     mc = multicodec.add_prefix('ed25519-pub', public_key_bytes)
@@ -53,6 +53,23 @@ def get_signing_key(jwk_pr):
     return signing_key
 
 
+def get_public_key_bytes(pub_str):
+    pub = pub_str
+    missing_padding = len(pub_str) % 4
+    if missing_padding:
+      pub += '=' * (4 - missing_padding)
+
+    public_key_bytes = nacl.encoding.URLSafeBase64Encoder.decode(pub)
+    return public_key_bytes
+
+def get_hash_public_key(public_key_bytes):
+    mc = multicodec.add_prefix('ed25519-pub', public_key_bytes)
+
+    # Multibase encode the hashed bytes
+    did = multiformats.multibase.encode(mc, 'base58btc')
+    return did
+
+
 def generate_did(jwk_pr, url=None):
     signing_key = get_signing_key(jwk_pr)
     verify_key = signing_key.verify_key
@@ -87,7 +104,7 @@ def gen_did_document(did, keys):
     url = "https://" + "/".join(did.split(":")[2:]) + "/did.json"
 
     return url, document_fixed_serialized
-    
+
 
 def resolve_did(did):
     if did[:8] != "did:web:":
@@ -100,7 +117,7 @@ def resolve_did(did):
         response = requests.get(url)
     if 200 <= response.status_code < 300:
         return response.json()
-    
+
 
 def main():
     parser=argparse.ArgumentParser(description='Generates a new did or key pair')
@@ -130,7 +147,7 @@ def main():
         did = generate_did(key)
         print(did)
         return
-    
+
     if args.gen_doc and not args.key_path:
         print("error: argument --key-path: expected one argument")
         return
