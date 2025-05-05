@@ -14,7 +14,7 @@ For now the installation is from the repository:
 ```sh
     python -m venv env
     source env/bin/activate
-    git clone https://gitea.pangea.org/ereuse/pyvckit.git
+    git clone https://farga.pangea.org/ereuse/pyvckit.git
     cd pyvckit
     pip install -r requirements.txt
     pip install -e .
