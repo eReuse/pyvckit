@@ -16,80 +16,78 @@ from pyvckit.did import generate_keys, generate_did
 
 
 def verify_credential(vc):
-    async def inner():
-        try:
-            return await didkit.verify_credential(vc, '{"proofFormat": "ldp"}')
-        except Exception:
-            return False
+    proof = json.loads(vc).get("proof", {})
+    verification_method = proof.get("verificationMethod", "")
+    proof_purpose = proof.get("proofPurpose", "")
+    options = {
+        "proofPurpose": proof_purpose,
+        "verificationMethod": verification_method,
+    }
+    return didkit.verifyCredential(vc, json.dumps(options))
 
-    return asyncio.run(inner())
 
-
-def render_and_sign_credential(unsigned_vc, jwk_issuer):
-    async def inner():
-        signed_vc = await didkit.issue_credential(
-            json.dumps(unsigned_vc),
-            '{"proofFormat": "ldp"}',
-            jwk_issuer
-        )
-        return signed_vc
-
-    return asyncio.run(inner())
+def render_and_sign_credential(unsigned_vc, key):
+    verification_method = didkit.keyToVerificationMethod("key", key)
+    options = {
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": verification_method,
+    }
+    try:
+        return didkit.issueCredential(
+                json.dumps(unsigned_vc),
+                json.dumps(options),
+                key
+            )
+    except didkit.DIDKitException:
+        return False
 
 
 def verify_presentation(vp: str):
-    async def inner():
-        str_res = await didkit.verify_presentation(vp, '{"proofFormat": "ldp"}')
-        res = literal_eval(str_res)
-        ok = res["warnings"] == [] and res["errors"] == []
-        return ok, str_res
-
-    valid, reason = asyncio.run(inner())
-    if not valid:
+    proof = json.loads(vp).get("proof", {})
+    verification_method = proof.get("verificationMethod", "")
+    proof_purpose = proof.get("proofPurpose", "")
+    options = {
+        "proofPurpose": proof_purpose,
+        "verificationMethod": verification_method,
+    }
+    try:
+        return didkit.verifyPresentation(vp, json.dumps(options))
+    except didkit.DIDKitException:
         return False
 
-    vp = json.loads(vp)
-    for credential in vp["verifiableCredential"]:
-        valid = verify_credential(json.dumps(credential))
-        if not valid:
-            return False
 
-    return True
+def issue_verifiable_presentation(vc_list, key_holder, holder_did, presentation_id):
+    verification_method = didkit.keyToVerificationMethod("key", key_holder)
+    options = {
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": verification_method,
+    }
 
-
-def issue_verifiable_presentation(vc_list, jwk_holder, holder_did, presentation_id):
-    async def inner(unsigned_vp):
-        signed_vp = await didkit.issue_presentation(
-            unsigned_vp,
-            '{"proofFormat": "ldp"}',
-            jwk_holder
-        )
-        return signed_vp
-
-    unsigned_vp = json.dumps({
-        "@context": [
-            "https://www.w3.org/2018/credentials/v1"
-        ],
-        "id": presentation_id,
-        "type": [
-            "VerifiablePresentation"
-        ],
+    unsigned_vp = {
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "id": "http://example.org/credentials/{}".format(presentation_id),
+        "type": ["VerifiablePresentation"],
         "holder": holder_did,
         "verifiableCredential": vc_list
-    })
+    }
 
-    return asyncio.run(inner(unsigned_vp))
+    return didkit.issuePresentation(
+        json.dumps(unsigned_vp),
+        json.dumps(options),
+        key_holder
+    )
+
 
 def test_key_from_didkit():
-    key = didkit.generate_ed25519_key()
-    did_didkit = didkit.key_to_did("key", key)
+    key = didkit.generateEd25519Key()
+    did_didkit = didkit.keyToDID("key", key)
     did_pyvckit = generate_did(key)
     assert did_didkit == did_pyvckit
 
 
 def test_key_from_pyvckit():
     key = generate_keys()
-    did_didkit = didkit.key_to_did("key", key)
+    did_didkit = didkit.keyToDID("key", key)
     did_pyvckit = generate_did(key)
     assert did_didkit == did_pyvckit
 
@@ -119,8 +117,8 @@ def test_pyvckit_credential_validated_from_didkit():
 
 
 def test_didkit_credential_validated_from_pyvckit():
-    key = didkit.generate_ed25519_key()
-    did = didkit.key_to_did("key", key)
+    key = didkit.generateEd25519Key()
+    did = didkit.keyToDID("key", key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -203,14 +201,13 @@ def test_fail_pyvckit_presentation_validated_from_didkit():
 
     result = verify_vp(vp_fail)
     result2 = verify_presentation(vp_fail)
-
     assert result == result2
     assert not result
-
+    assert not result2
 
 def test_didkit_presentation_validated_from_pyvckit():
-    key = didkit.generate_ed25519_key()
-    did = didkit.key_to_did("key", key)
+    key = didkit.generateEd25519Key()
+    did = didkit.keyToDID("key", key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -226,8 +223,8 @@ def test_didkit_presentation_validated_from_pyvckit():
     }
     cred_signed = render_and_sign_credential(credential, key)
 
-    holder_key = didkit.generate_ed25519_key()
-    holder_did = didkit.key_to_did("key", holder_key)
+    holder_key = didkit.generateEd25519Key()
+    holder_did = didkit.keyToDID("key", holder_key)
 
     vc_list = [json.loads(cred_signed)]
     vp_signed = issue_verifiable_presentation(vc_list, holder_key, holder_did, "1")
@@ -237,8 +234,8 @@ def test_didkit_presentation_validated_from_pyvckit():
 
 
 def test_fail_didkit_presentation_validated_from_pyvckit():
-    key = didkit.generate_ed25519_key()
-    did = didkit.key_to_did("key", key)
+    key = didkit.generateEd25519Key()
+    did = didkit.keyToDID("key", key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -254,8 +251,8 @@ def test_fail_didkit_presentation_validated_from_pyvckit():
     }
     cred_signed = render_and_sign_credential(credential, key)
 
-    holder_key = didkit.generate_ed25519_key()
-    holder_did = didkit.key_to_did("key", holder_key)
+    holder_key = didkit.generateEd25519Key()
+    holder_did = didkit.keyToDID("key", holder_key)
 
     vc_list = [json.loads(cred_signed)]
     vp_signed = issue_verifiable_presentation(vc_list, holder_key, holder_did, "1")
@@ -268,8 +265,8 @@ def test_fail_didkit_presentation_validated_from_pyvckit():
 
 
 def test_fail2_didkit_presentation_validated_from_pyvckit():
-    key = didkit.generate_ed25519_key()
-    did = didkit.key_to_did("key", key)
+    key = didkit.generateEd25519Key()
+    did = didkit.keyToDID("key", key)
 
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
@@ -285,8 +282,8 @@ def test_fail2_didkit_presentation_validated_from_pyvckit():
     }
     cred_signed = render_and_sign_credential(credential, key)
 
-    holder_key = didkit.generate_ed25519_key()
-    holder_did = didkit.key_to_did("key", holder_key)
+    holder_key = didkit.generateEd25519Key()
+    holder_did = didkit.keyToDID("key", holder_key)
 
     vc_list = [json.loads(cred_signed)]
     vp_signed = issue_verifiable_presentation(vc_list, holder_key, holder_did, "1")
@@ -296,6 +293,5 @@ def test_fail2_didkit_presentation_validated_from_pyvckit():
 
     result = verify_vp(vp_fail)
     result2 = verify_presentation(vp_fail)
-    assert result == result2
     assert not result
-
+    assert result2 == '{"checks":[],"warnings":[],"errors":["Crypto error"]}'

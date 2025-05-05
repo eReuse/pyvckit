@@ -14,7 +14,7 @@ Por ahora la instalación es desde el repositorio:
 ```sh
     python -m venv env
     source env/bin/activate
-    git clone https://gitea.pangea.org/ereuse/pyvckit.git
+    git clone https://farga.pangea.org/ereuse/pyvckit.git
     cd pyvckit
     pip install -r requirements.txt
     pip install -e .
@@ -152,4 +152,3 @@ Aunque hay compatibilidad con didkit, hay algunas pequeñas diferencias en el co
 En didkit es necesario definir en el contexto todo nombre, (clave) usada en la credencial o si no fallará tanto la firma como la verificación.
 En pyvckit si un nombre, (clave) se usa pero no esta definido en el contexto, entonces esa firma o verificación filtrará esa parte de la credencial y la omitirá como si no existiera.
 La firma se hará borrando esa parte no definida.
-
