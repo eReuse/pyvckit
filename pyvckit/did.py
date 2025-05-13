@@ -100,8 +100,6 @@ def gen_did_document(did, keys):
     document["authentication"].append(webdid_owner)
     document["assertionMethod"].append(webdid_owner)
     document["service"][0]["id"] = webdid_revocation
-    document_fixed_serialized = json.dumps(document)
-    url = "https://" + "/".join(did.split(":")[2:]) + "/did.json"
 
     # inspired by https://w3c-ccg.github.io/did-method-web/#example-example-did-web-did-document-using-an-ethereum-address
     if keys.get('eth_pub_key'):
@@ -113,6 +111,8 @@ def gen_did_document(did, keys):
             "blockchainAccountId": f"eip155:1:{keys['eth_pub_key']}"
         })
 
+    document_fixed_serialized = json.dumps(document)
+    url = "https://" + "/".join(did.split(":")[2:]) + "/did.json"
     return url, document_fixed_serialized
 
 
