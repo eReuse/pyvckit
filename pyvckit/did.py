@@ -107,8 +107,7 @@ def gen_did_document(did, keys):
             "id": webdid_owner,
             "type": 'EcdsaSecp256k1RecoveryMethod2020',
             "controller": did,
-            # TODO doubt with the CHAIN ID NUMBER (right now hardcoded to 1)
-            "blockchainAccountId": f"eip155:1:{keys['eth_pub_key']}"
+            "blockchainAccountId": f"eip155:{keys['eth_chainid']}:{keys['eth_pub_key']}"
         })
 
     document_fixed_serialized = json.dumps(document)
