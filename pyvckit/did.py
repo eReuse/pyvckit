@@ -102,12 +102,12 @@ def gen_did_document(did, keys):
     document["service"][0]["id"] = webdid_revocation
 
     # inspired by https://w3c-ccg.github.io/did-method-web/#example-example-did-web-did-document-using-an-ethereum-address
-    if keys.get('eth_pub_key'):
+    if keys.get('eth_subject_pub_key'):
         document["verificationMethod"].append({
             "id": webdid_owner,
             "type": 'EcdsaSecp256k1RecoveryMethod2020',
             "controller": did,
-            "blockchainAccountId": f"eip155:{keys['eth_chainid']}:{keys['eth_pub_key']}"
+            "blockchainAccountId": f"eip155:{keys['eth_chainid']}:{keys['eth_subject_pub_key']}"
         })
 
     document_fixed_serialized = json.dumps(document)
