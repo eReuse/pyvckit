@@ -66,6 +66,31 @@ def jws_split(jws):
     return header.encode(), signature
 
 
+def is_revoked(vc, did_document):
+    # TODO enable this function
+    return False
+
+    if "credentialStatus" in vc:
+        # NOTE: THIS FIELD SHOULD BE SERIALIZED AS AN INTEGER,
+        # BUT IOTA DOCUMENTAITON SERIALIZES IT AS A STRING.
+        # DEFENSIVE CAST ADDED JUST IN CASE.
+        revocation_index = int(vc["credentialStatus"]["revocationBitmapIndex"])
+
+        if did_document:  # Only DID:WEB can revoke
+            issuer_revocation_list = did_document["service"][0]
+            assert issuer_revocation_list["type"] == "RevocationBitmap2022"
+            revocation_bitmap = BitMap.deserialize(
+                zlib.decompress(
+                    base64.b64decode(
+                        issuer_revocation_list["serviceEndpoint"].rsplit(",")[1].encode('utf-8')
+                    )
+                )
+            )
+            if revocation_index in revocation_bitmap:
+                # Credential has been revoked by the issuer
+                return False
+
+
 def verify_vc(credential):
     vc = json.loads(credential)
     header = {"alg": "EdDSA", "crit": ["b64"], "b64": False}
@@ -109,26 +134,7 @@ def verify_vc(credential):
     if data_verified != signature:
         return False
 
-
-    if "credentialStatus" in vc:
-        # NOTE: THIS FIELD SHOULD BE SERIALIZED AS AN INTEGER,
-        # BUT IOTA DOCUMENTAITON SERIALIZES IT AS A STRING.
-        # DEFENSIVE CAST ADDED JUST IN CASE.
-        revocation_index = int(vc["credentialStatus"]["revocationBitmapIndex"])
-
-        if did_document:  # Only DID:WEB can revoke
-            issuer_revocation_list = did_document["service"][0]
-            assert issuer_revocation_list["type"] == "RevocationBitmap2022"
-            revocation_bitmap = BitMap.deserialize(
-                zlib.decompress(
-                    base64.b64decode(
-                        issuer_revocation_list["serviceEndpoint"].rsplit(",")[1].encode('utf-8')
-                    )
-                )
-            )
-            if revocation_index in revocation_bitmap:
-                # Credential has been revoked by the issuer
-                return False
+    assert is_revoked(vc, did_document) is False, "This credential is revoked"
 
     return True
 
