@@ -20,7 +20,7 @@ def get_signing_input(payload):
     return header_b64, signing_input
 
 
-def get_message(vc):
+def get_message(vc, verify=True):
     document = vc.copy()
     proof = document.pop("proof", {})
     jws = proof.pop("jws", None)
@@ -28,12 +28,12 @@ def get_message(vc):
     if not jws:
         return None, False
 
-    return jws+"==", to_jws_payload(document, proof)
+    return jws+"==", to_jws_payload(document, proof, verify=verify)
 
 
-def get_pubkey_bytes_from_diddocument(did, did_document=None):
+def get_pubkey_bytes_from_diddocument(did, did_document=None, verify=True):
     if not did_document:
-        did_document = resolve_did(did)
+        did_document = resolve_did(did, verify=verify)
 
     if not did_document:
         return
@@ -44,12 +44,13 @@ def get_pubkey_bytes_from_diddocument(did, did_document=None):
             return get_public_key_bytes(pub_key.get("x", ""))
 
 
-def get_verify_key(vc, did_document=None):
+def get_verify_key(vc, did_document=None, verify=True):
     did = vc["proof"]["verificationMethod"].split("#")[0]
     if did[:7] == "did:web":
         public_key_bytes = get_pubkey_bytes_from_diddocument(
             did,
-            did_document=did_document
+            did_document=did_document,
+            verify=verify
         )
         if not public_key_bytes:
             return False
@@ -91,10 +92,10 @@ def is_revoked(vc, did_document):
                 return False
 
 
-def verify_vc(credential):
+def verify_vc(credential, verify=True):
     vc = json.loads(credential)
     header = {"alg": "EdDSA", "crit": ["b64"], "b64": False}
-    jws, message = get_message(vc)
+    jws, message = get_message(vc, verify=verify)
     if not message:
         return False
 
@@ -124,7 +125,7 @@ def verify_vc(credential):
     if did_issuer[:7] == "did:web":
         did_document = resolve_did(did_issuer)
 
-    verify_key = get_verify_key(vc, did_document=did_document)
+    verify_key = get_verify_key(vc, did_document=did_document, verify=verify)
 
     try:
         data_verified = verify_key.verify(signature_jws+signature)

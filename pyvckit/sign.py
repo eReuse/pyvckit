@@ -1,5 +1,7 @@
 import json
 import hashlib
+import requests
+import functools
 import nacl.signing
 import nacl.encoding
 from pyld import jsonld
@@ -10,6 +12,21 @@ from pyvckit.document_loader import requests_document_loader
 
 
 jsonld.set_document_loader(requests_document_loader())
+
+
+def create_loader(url, options={}, verify=True):
+    response = requests.get(
+        url,
+        headers={'Accept': 'application/ld+json, application/json'},
+        verify=verify)
+
+    response.raise_for_status()
+
+    return {
+        "contextUrl": None,
+        "document": response.json(),
+        "documentUrl": response.url
+    }
 
 
 # https://github.com/spruceid/ssi/blob/main/ssi-jws/src/lib.rs#L75
@@ -36,8 +53,16 @@ def detached_sign_unencoded_payload(payload, key):
 
 
 # https://github.com/spruceid/ssi/blob/main/ssi-ldp/src/lib.rs#L423
-def urdna2015_normalize(document, proof):
-    doc_dataset = jsonld.compact(document, "https://www.w3.org/2018/credentials/v1")
+def urdna2015_normalize(document, proof, verify=True):
+    configured_loader = functools.partial(create_loader, verify=verify)
+    options = {
+    'documentLoader': configured_loader,
+    }
+    doc_dataset = jsonld.compact(
+        document,
+        "https://www.w3.org/2018/credentials/v1",
+        options=options
+    )
     sigopts_dataset = jsonld.compact(proof, "https://w3id.org/security/v2")
     doc_normalized = jsonld.normalize(
         doc_dataset,
@@ -59,20 +84,20 @@ def sha256_normalized(doc_normalized, sigopts_normalized):
 
 
 # https://github.com/spruceid/ssi/blob/main/ssi-ldp/src/lib.rs#L413
-def to_jws_payload(document, proof):
-    doc_normalized, sigopts_normalized = urdna2015_normalize(document, proof)
+def to_jws_payload(document, proof, verify=True):
+    doc_normalized, sigopts_normalized = urdna2015_normalize(document, proof, verify=verify)
     return sha256_normalized(doc_normalized, sigopts_normalized)
 
 
 # https://github.com/spruceid/ssi/blob/main/ssi-ldp/src/lib.rs#L498
-def sign_proof(document, proof, key):
-    message = to_jws_payload(document, proof)
+def sign_proof(document, proof, key, verify=True):
+    message = to_jws_payload(document, proof, verify=verify)
     jws = detached_sign_unencoded_payload(message, key)
     proof["jws"] = jws.decode('utf-8')[:-2]
     return proof
 
 
-def sign(credential, key, issuer_did):
+def sign(credential, key, issuer_did, verify=True):
     signing_key = get_signing_key(key)
     document = json.loads(credential)
     _did = issuer_did + "#" + issuer_did.split(":")[-1]
@@ -80,8 +105,7 @@ def sign(credential, key, issuer_did):
     proof['verificationMethod'] = _did
     proof['created'] = now()
 
-    sign_proof(document, proof, signing_key)
+    sign_proof(document, proof, signing_key, verify=verify)
     del proof['@context']
     document['proof'] = proof
     return document
-
