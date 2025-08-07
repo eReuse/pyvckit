@@ -115,7 +115,7 @@ def gen_did_document(did, keys):
     return url, document_fixed_serialized
 
 
-def resolve_did(did):
+def resolve_did(did, verify=True):
     if did[:8] != "did:web:":
         return
 
@@ -125,7 +125,7 @@ def resolve_did(did):
             url = "https://{}/did.json".format("/".join(sdid))
         elif len(sdid) == 2:
             url = "https://{}/.well-known/{}/did.json".format(*sdid)
-        response = requests.get(url)
+        response = requests.get(url, verify=verify)
     except Exception:
         if len(sdid) > 2:
             url = "http://{}/did.json".format("/".join(sdid))
