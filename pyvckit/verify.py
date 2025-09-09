@@ -6,6 +6,7 @@ import nacl.signing
 import multicodec
 import multiformats
 
+from datetime import datetime
 from nacl.signing import VerifyKey
 from pyroaring import BitMap
 
@@ -92,6 +93,23 @@ def is_revoked(vc, did_document):
                 return False
 
 
+def is_expired(vc):
+    valid_from = vc.get("validFrom")
+    valid_until = vc.get("validUntil")
+    now = datetime.now()
+    fmt = "%Y-%m-%dT%H:%M:%SZ"
+
+    if valid_from:
+        if datetime.strptime(valid_from, fmt) > now:
+            return True
+
+    if valid_until:
+        if datetime.strptime(valid_until, fmt) < now:
+            return True
+
+    return False
+
+
 def verify_vc(credential, verify=True):
     vc = json.loads(credential)
     header = {"alg": "EdDSA", "crit": ["b64"], "b64": False}
@@ -136,6 +154,7 @@ def verify_vc(credential, verify=True):
         return False
 
     assert is_revoked(vc, did_document) is False, "This credential is revoked"
+    assert is_expired(vc) is False, "This credential is expired"
 
     return True
 
