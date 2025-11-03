@@ -58,9 +58,13 @@ def urdna2015_normalize(document, proof, verify=True):
     options = {
     'documentLoader': configured_loader,
     }
+    context_url = (
+        "https://www.w3.org/ns/credentials/v2"
+        if "https://www.w3.org/ns/credentials/v2" in document.get("@context", [])
+        else "https://www.w3.org/2018/credentials/v1")
     doc_dataset = jsonld.compact(
         document,
-        "https://www.w3.org/2018/credentials/v1",
+        context_url,
         options=options
     )
     sigopts_dataset = jsonld.compact(proof, "https://w3id.org/security/v2")
