@@ -1,12 +1,16 @@
 import json
 import zlib
 import base64
+import requests
 import nacl.encoding
 import nacl.signing
 import multicodec
 import multiformats
 
 from datetime import datetime, timezone
+
+from jsonschema import Draft202012Validator, RefResolver, ValidationError
+from datetime import datetime
 from nacl.signing import VerifyKey
 from pyroaring import BitMap
 
@@ -112,7 +116,7 @@ def is_expired(vc):
     return False
 
 
-def verify_vc(credential, verify=True):
+def verify_signature(credential, verify=True):
     vc = json.loads(credential)
     header = {"alg": "EdDSA", "crit": ["b64"], "b64": False}
     jws, message = get_message(vc, verify=verify)
@@ -160,16 +164,41 @@ def verify_vc(credential, verify=True):
 
     return True
 
+def verify_schema(credential, verify=True):
+    vc = json.loads(credential)
 
-def verify_vp(presentation):
+    schema_url = vc.get('credentialSchema', {}).get('id')
+    if not schema_url:
+        return False
+
+    try:
+        schema_response = requests.get(schema_url, verify=verify)
+        schema_response.raise_for_status()
+        schema_doc = schema_response.json()
+    except requests.exceptions.RequestException:
+        return False
+
+    resolver = RefResolver(base_uri=schema_url, referrer=schema_doc)
+    validator = Draft202012Validator(schema_doc, resolver=resolver)
+
+    try:
+        validator.validate(vc)
+    except ValidationError:
+        return False
+    except Exception:
+        return False
+
+    return True
+
+def verify_vp_signature(presentation):
     vp = json.loads(presentation)
 
-    if not verify_vc(presentation):
+    if not verify_signature(presentation):
         return False
 
     for vc in vp['verifiableCredential']:
         vc_str = json.dumps(vc)
-        if not verify_vc(vc_str):
+        if not verify_signature(vc_str):
             return False
 
     return True
