@@ -6,6 +6,7 @@ import nacl.encoding
 import nacl.signing
 import multicodec
 import multiformats
+from typing import Tuple
 
 from datetime import datetime, timezone
 
@@ -97,6 +98,15 @@ def is_revoked(vc, did_document):
                 return False
 
 
+def _load_credential(data):
+    # Helper function to allow verification of dict json
+    if isinstance(data, dict):
+        return data, None
+    try:
+        return json.loads(data), None
+    except (TypeError, json.JSONDecodeError):
+        return None, "Invalid input: Argument must be a valid JSON string or a dictionary"
+
 def is_expired(vc):
     valid_from = vc.get("validFrom")
     valid_until = vc.get("validUntil")
@@ -116,34 +126,45 @@ def is_expired(vc):
     return False
 
 
-def verify_signature(credential, verify=True):
-    vc = json.loads(credential)
+def verify_signature(credential, verify=True) -> Tuple[bool, str]:
+    vc, error = _load_credential(credential)
+    if error:
+        return False, error
+
     header = {"alg": "EdDSA", "crit": ["b64"], "b64": False}
     jws, message = get_message(vc, verify=verify)
+
     if not message:
-        return False
+        return False, "Could not extract JWS or message from proof"
 
     did_issuer = vc.get("issuer", {}) or vc.get("holder", {})
     if isinstance(did_issuer, dict):
         did_issuer = did_issuer.get("id")
 
-    did_issuer_method = vc["proof"]["verificationMethod"].split("#")[0]
+    try:
+        did_issuer_method = vc["proof"]["verificationMethod"].split("#")[0]
+    except (KeyError, IndexError, TypeError):
+        return False, "Missing or malformed verificationMethod in proof"
+
     if did_issuer != did_issuer_method:
-        return False
+        return False, f"Issuer DID ({did_issuer}) does not match verification method controller ({did_issuer_method})"
 
     header_b64, signature = get_signing_input(message)
     header_jws, signature_jws = jws_split(jws)
 
     if header_jws != header_b64:
-        return False
+        return False, "JWS header does not match signed header input"
 
-    header_jws_json = json.loads(
-        nacl.encoding.URLSafeBase64Encoder.decode(header_jws)
-    )
+    try:
+        header_jws_json = json.loads(
+            nacl.encoding.URLSafeBase64Encoder.decode(header_jws)
+        )
+    except Exception:
+         return False, "Could not decode JWS header"
 
     for k, v in header.items():
         if header_jws_json.get(k) != v:
-            return False
+            return False, f"Invalid JWS header parameter: {k}"
 
     did_document = {}
     if did_issuer[:7] == "did:web":
@@ -154,51 +175,61 @@ def verify_signature(credential, verify=True):
     try:
         data_verified = verify_key.verify(signature_jws+signature)
     except nacl.exceptions.BadSignatureError:
-        return False
+        return False, "Cryptographic signature verification failed (Bad Signature)"
 
     if data_verified != signature:
-        return False
+        return False, "This credential is not cryptographically vallid"
+    if is_revoked(vc, did_document):
+        return False, "This credential is revoked"
+    if is_expired(vc):
+        return False, "This credential is expired"
 
-    assert is_revoked(vc, did_document) is False, "This credential is revoked"
-    assert is_expired(vc) is False, "This credential is expired"
-
-    return True
+    return True, "Success"
 
 def verify_schema(credential, verify=True):
-    vc = json.loads(credential)
+    vc, error = _load_credential(credential)
+    if error:
+        return False, error
 
     schema_url = vc.get('credentialSchema', {}).get('id')
     if not schema_url:
-        return False
+        return False, "Credential is missing 'credentialSchema' ID"
 
     try:
         schema_response = requests.get(schema_url, verify=verify)
         schema_response.raise_for_status()
         schema_doc = schema_response.json()
-    except requests.exceptions.RequestException:
-        return False
+    except requests.exceptions.RequestException as e:
+        return False, f"Failed to fetch schema from {schema_url}: {str(e)}"
+    except json.JSONDecodeError:
+        return False, "Fetched schema is not valid JSON"
 
     resolver = RefResolver(base_uri=schema_url, referrer=schema_doc)
     validator = Draft202012Validator(schema_doc, resolver=resolver)
 
     try:
         validator.validate(vc)
-    except ValidationError:
-        return False
-    except Exception:
-        return False
+    except ValidationError as e:
+        return False, f"Schema validation failed: {e.message} at path '{'/'.join(map(str, e.path))}'"
+    except Exception as e:
+        return False, f"Internal error during schema validation: {str(e)}"
 
-    return True
+    return True, "Schema is valid"
 
-def verify_vp_signature(presentation):
+
+def verify_vp_signature(presentation) -> Tuple[bool, str]:
     vp = json.loads(presentation)
 
-    if not verify_signature(presentation):
-        return False
+    is_vp_valid, vp_error = verify_signature(presentation)
+    if not is_vp_valid:
+        return False, f"Presentation Signature Invalid: {vp_error}"
 
-    for vc in vp['verifiableCredential']:
-        vc_str = json.dumps(vc)
-        if not verify_signature(vc_str):
-            return False
+    if 'verifiableCredential' in vp:
+        for index, vc in enumerate(vp['verifiableCredential']):
+            vc_str = json.dumps(vc)
 
-    return True
+            is_vc_valid, vc_error = verify_signature(vc_str)
+            if not is_vc_valid:
+                return False, f"Credential #{index} Invalid: {vc_error}"
+
+    return True, "Presentation and all included Credentials are valid"
