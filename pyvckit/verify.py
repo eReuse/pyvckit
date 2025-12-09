@@ -6,7 +6,7 @@ import nacl.signing
 import multicodec
 import multiformats
 
-from datetime import datetime
+from datetime import datetime, timezone
 from nacl.signing import VerifyKey
 from pyroaring import BitMap
 
@@ -96,15 +96,17 @@ def is_revoked(vc, did_document):
 def is_expired(vc):
     valid_from = vc.get("validFrom")
     valid_until = vc.get("validUntil")
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     fmt = "%Y-%m-%dT%H:%M:%SZ"
 
     if valid_from:
-        if datetime.strptime(valid_from, fmt) > now:
+        dt_from = datetime.strptime(valid_from, fmt).replace(tzinfo=timezone.utc)
+        if dt_from > now:
             return True
 
     if valid_until:
-        if datetime.strptime(valid_until, fmt) < now:
+        dt_until = datetime.strptime(valid_until, fmt).replace(tzinfo=timezone.utc)
+        if dt_until < now:
             return True
 
     return False
