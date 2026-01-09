@@ -168,7 +168,7 @@ def verify_signature(credential, verify=True) -> Tuple[bool, str]:
 
     did_document = {}
     if did_issuer[:7] == "did:web":
-        did_document = resolve_did(did_issuer)
+        did_document = resolve_did(did_issuer, verify=verify)
 
     verify_key = get_verify_key(vc, did_document=did_document, verify=verify)
 

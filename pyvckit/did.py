@@ -131,7 +131,7 @@ def resolve_did(did, verify=True):
             url = "http://{}/did.json".format("/".join(sdid))
         elif len(sdid) == 2:
             url = "http://{}/.well-known/{}/did.json".format(*sdid)
-        response = requests.get(url)
+        response = requests.get(url, verify=verify)
 
     if 200 <= response.status_code < 300:
         return response.json()
