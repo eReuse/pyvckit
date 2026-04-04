@@ -120,18 +120,23 @@ def resolve_did(did, verify=True):
         return
 
     sdid = did[8:].split(":")
+    domain = sdid[0]
+    paths = sdid[1:]
+
+    if not paths:
+        url = f"https://{domain}/.well-known/did.json"
+    else:
+        url_path = "/".join(paths)
+        url = f"https://{domain}/{url_path}/did.json"
+
     try:
-        if len(sdid) > 2:
-            url = "https://{}/did.json".format("/".join(sdid))
-        elif len(sdid) == 2:
-            url = "https://{}/.well-known/{}/did.json".format(*sdid)
         response = requests.get(url, verify=verify)
     except Exception:
-        if len(sdid) > 2:
-            url = "http://{}/did.json".format("/".join(sdid))
-        elif len(sdid) == 2:
-            url = "http://{}/.well-known/{}/did.json".format(*sdid)
-        response = requests.get(url)
+        url = url.replace("https://", "http://")
+        try:
+            response = requests.get(url, verify=verify)
+        except Exception:
+            return None
 
     if 200 <= response.status_code < 300:
         return response.json()
