@@ -1,4 +1,7 @@
 # PyVckit
+
+> ⚠️ **Status: Experimental**. PyVckit is under active development and its API may change without notice. It has not undergone a formal security audit. Use it at your own risk, and avoid relying on it for production or security-critical systems until it reaches a stable release. Bug reports, issues, and pull requests are welcome.
+
 PyVckit is a library for:
 - sign verifiable credentials
 - verify verifiable credentials
