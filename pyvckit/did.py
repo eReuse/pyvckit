@@ -114,28 +114,45 @@ def gen_did_document(did, keys):
     url = "https://" + "/".join(did.split(":")[2:]) + "/did.json"
     return url, document_fixed_serialized
 
-
-def resolve_did(did, verify=True):
-    if did[:8] != "did:web:":
-        return
+def resolve_did_url(did):
+    if not did.startswith("did:web:"):
+        return None
 
     sdid = did[8:].split(":")
+    domain = sdid[0]
+    paths = sdid[1:]
+
+    if not paths:
+        return f"https://{domain}/.well-known/did.json"
+    else:
+        url_path = "/".join(paths)
+        return f"https://{domain}/{url_path}/did.json"
+
+
+def resolve_did(did, verify=True):
+    url = resolve_did_url(did)
+
+    if not url:
+        return None
+
     try:
-        if len(sdid) > 2:
-            url = "https://{}/did.json".format("/".join(sdid))
-        elif len(sdid) == 2:
-            url = "https://{}/.well-known/{}/did.json".format(*sdid)
         response = requests.get(url, verify=verify)
+        response.raise_for_status()
     except Exception:
-        if len(sdid) > 2:
-            url = "http://{}/did.json".format("/".join(sdid))
-        elif len(sdid) == 2:
-            url = "http://{}/.well-known/{}/did.json".format(*sdid)
-        response = requests.get(url)
+        url = url.replace("https://", "http://")
+        try:
+            response = requests.get(url, verify=verify)
+            response.raise_for_status()
+        except Exception:
+            return None
 
     if 200 <= response.status_code < 300:
-        return response.json()
+        try:
+            return response.json()
+        except ValueError:
+            return None
 
+    return None
 
 def main():
     parser=argparse.ArgumentParser(description='Generates a new did or key pair')
