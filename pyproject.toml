@@ -1,3 +1,57 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyvckit"
+version = "0.0.19"
+description = "signature and validation of verifiable credential and verifiable presentation"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "eReuse.org team", email = "cayo@puigdefabregas.eu" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "jsonref",
+    "PyLD",
+    "Requests",
+    "jsonschema[format]",
+    "asn1crypto",
+    "certifi",
+    "cffi",
+    "cryptography",
+    "fonttools",
+    "idna",
+    "jsonwebtoken",
+    "jwcrypto",
+    "oscrypto",
+    "pycparser",
+    "pyedid",
+    "pyHanko[opentype]",
+    "pyhanko-certvalidator",
+    "pyOpenSSL",
+    "pypng",
+    "PyYAML",
+    "qrcode",
+    "reportlab",
+    "Pillow",
+    "multiformats",
+    "PyNaCl",
+    "py-multicodec"
+]
+
+[project.urls]
+Homepage = "https://github.com/eReuse/pyvckit"
+
+[project.optional-dependencies]
+test = [
+    "requests_mock",
+    "pytest",
+    "pyroaring",
+    "didkit"
+]
