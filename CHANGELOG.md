@@ -1,6 +1,9 @@
-# 0.0.1 to 0.0.20
+# 0.0.20
 
 - Fix did resolving ([#15](https://farga.pangea.org/ereuse/pyvckit/pulls/15))
+
+# Previous (0.0.1 to 0.0.19)
+
 - Added schema validator function ([#12](https://farga.pangea.org/ereuse/pyvckit/pulls/12))
 - Comparison of valid_until and validf_from made using UTC timezone ([#11](https://farga.pangea.org/ereuse/pyvckit/pulls/11))
 - Support for W3C Verifiable Credentials V2 ([#9](https://farga.pangea.org/ereuse/pyvckit/pulls/9))
