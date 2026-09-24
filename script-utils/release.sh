@@ -5,6 +5,24 @@ set -u
 # DEBUG
 set -x
 
+do_codeberg_release() {
+        release_data='{
+  "tag_name":"%s",
+  "name":"%s",
+  "body":"%s",
+  "draft":false,
+  "prerelease":false,
+  "hide_archive_links":true
+}'
+        codeberg_post_url='https://codeberg.org/api/v1/repos'
+        curl -s \
+             -X POST "${codeberg_post_url}/${CODEBERG_USER}/${CODEBERG_REPO}/releases" \
+             -H "Authorization: token ${CODEBERG_TOKEN}" \
+             -H "Content-Type: application/json" \
+             -d "$(printf "${release_data}" \
+                          "${NEW_VERSION}" "${NEW_VERSION}" "${release_message}")"
+}
+
 main() {
         # TODO better integration with CHANGELOG generation
 
@@ -41,7 +59,19 @@ main() {
 
         git add pyproject.toml
         git commit -m "Bump version to ${NEW_VERSION}"
-        git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
+        # prints last markdown header
+        CHANGELOG_CONTENT="$(awk '/^# /{if(printing)exit; printing=1} printing' ../CHANGELOG.md)"
+        git tag -a "v${NEW_VERSION}" --cleanup=verbatim -m "${CHANGELOG_CONTENT}"
+        git push origin "${NEW_VERSION}"
+
+        # TODO test forgejo (it's very easy with form anyway)
+        # looks like I should wait some seconds, to ensure release works
+        #sleep 5
+        #
+        #do_codeberg_release
+
+        # TODO do github / pyinfra did it with python
+        # not that easy to generate, needs copypaste from git tag
 }
 
 main "${@:-}"
