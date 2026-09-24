@@ -1,3 +1,5 @@
+# 0.0.1 to 0.0.20
+
 - Fix did resolving ([#15](https://farga.pangea.org/ereuse/pyvckit/pulls/15))
 - Added schema validator function ([#12](https://farga.pangea.org/ereuse/pyvckit/pulls/12))
 - Comparison of valid_until and validf_from made using UTC timezone ([#11](https://farga.pangea.org/ereuse/pyvckit/pulls/11))
