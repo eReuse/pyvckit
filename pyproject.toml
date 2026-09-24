@@ -47,6 +47,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/eReuse/pyvckit"
+Changelog = "https://github.com/eReuse/pyvckit/releases"
 
 [project.optional-dependencies]
 test = [
