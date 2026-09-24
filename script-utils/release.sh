@@ -6,6 +6,8 @@ set -u
 set -x
 
 main() {
+        # TODO better integration with CHANGELOG generation
+
         if [ ! -f "$HOME/.pypirc" ]; then
                 echo "Error: Missing $HOME/.pypirc"
                 exit 1
@@ -20,6 +22,7 @@ main() {
 
         CURRENT_VERSION=$(grep '^version *=' pyproject.toml | cut -d'"' -f2)
 
+        # TODO make less interactive
         set +x
         printf "Current version [%s]. Enter new version: " "$CURRENT_VERSION"
         read NEW_VERSION
